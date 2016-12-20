@@ -114,6 +114,10 @@ public:
 	_Rune* Create();
 	bool   Delete(_Rune* pRune);
 	
+	size_t Create_Offset();
+	bool Delete_Offset(size_t stRune);
+	_Rune* Get_Offset(size_t stRune);
+	
 private:
 	struct _Rune_Box
 	{

@@ -35,21 +35,23 @@ int main()
 	objWordBase.Add_Word("朋友");
 
 
-        objvecWord.clear();
+  objvecWord.clear();
 
-        objWordBase.Cut("哪里见过你呀,朋友", objvecWord);
-        printf("[Cut]");
-        for(int i = 0; i < objvecWord.size(); i++)
-        {
-                if(i != objvecWord.size() - 1)
-                {
-                        printf("%s/", objvecWord[i].c_str());
-                }
-                else
-                {
-                        printf("%s\n", objvecWord[i].c_str());
-                }
-        }	
+  objWordBase.Cut("哪里见过你呀,朋友", objvecWord);
+  printf("[Cut]");
+  for(int i = 0; i < objvecWord.size(); i++)
+  {
+          if(i != objvecWord.size() - 1)
+          {
+                  printf("%s/", objvecWord[i].c_str());
+          }
+          else
+          {
+                  printf("%s\n", objvecWord[i].c_str());
+          }
+  }	
+  
+  printf("[main]size_t=%d.\n", sizeof(size_t));
 		
 	return 0;
 }

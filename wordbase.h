@@ -23,7 +23,7 @@ public:
 	
 private:
 	ENUM_WORD_TYPE Get_Rune_From_String(const char* pWord, int nBegin, int nLen, _Rune* pRune);
-	_RuneLinkNode* Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune);
+	_RuneLinkNode* Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, size_t stRune);
 	
 	void DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer);
 	

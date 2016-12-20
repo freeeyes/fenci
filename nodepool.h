@@ -28,14 +28,14 @@ struct _RuneLinkNode
 	typedef hash_map<int, _RuneLinkNode*> hmapRuneNextMap;	
 	
 	hmapRuneNextMap            m_hmapRuneNextMap;
-	_Rune*                     m_pRune;
+	size_t                     m_stRune;
 	char                       m_pWord[MAX_WORD_LENGTH];
 	int                        m_nPoolIndex;
 	
 	_RuneLinkNode()
 	{
 		m_nPoolIndex = 0;
-		m_pRune      = NULL;
+		m_stRune     = NULL;
 		memset(m_pWord, 0, MAX_WORD_LENGTH);
 	}
 	
