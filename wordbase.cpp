@@ -2,8 +2,8 @@
 
 CWordBase::CWordBase()
 {
-	m_emType    = WORD_TYPE_ASCII;
 	m_pWordRoot = NULL;
+	m_emType    = NULL;
 }
 
 CWordBase::~CWordBase()
@@ -21,6 +21,9 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 	//初始化Rune内存池
 	size_t nSize = m_objNodePool.Init(nPoolSize, pData);
 	printf("[Main]curr stPoolSize=%d.\n", nSize);
+	
+	m_emType    = (int* )&pData[nSize];
+	(*m_emType) = WORD_TYPE_ASCII;
 	
 	//初始化树
 	m_pWordRoot = m_objNodePool.CreateRoot();
@@ -61,10 +64,11 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 			if(emType != WORD_TYPE_UNKNOW)
 			{
 				i = i + pRune->m_nRuneLen;
-				if(m_emType == WORD_TYPE_ASCII && emType != WORD_TYPE_ASCII)
+				if((*m_emType) == WORD_TYPE_ASCII && emType != WORD_TYPE_ASCII)
 				{
 					//记录当前字符集
-					m_emType = emType;
+					(*m_emType) = emType;
+					printf("[CWordBase::Init]m_emType=%d.\n", (*m_emType));
 				}
 			}
 			else
@@ -96,6 +100,8 @@ bool CWordBase::Load(int nPoolSize, char* pData)
 	//初始化Rune内存池
 	size_t nSize = m_objNodePool.Load(nPoolSize, pData);
 	printf("[Main]curr stPoolSize=%d.\n", nSize);
+	
+	m_emType = (int* )&pData[nSize];
 	
 	//初始化树
 	m_pWordRoot = m_objNodePool.CreateRoot();	
@@ -264,9 +270,9 @@ int CWordBase::Cut_Word(const char* pSentence, vector<string>& vecWord)
 		if(emType != WORD_TYPE_UNKNOW)
 		{
 			i = i + objRune.m_nRuneLen;
-			if(emType != WORD_TYPE_ASCII && emType != m_emType)
+			if(emType != WORD_TYPE_ASCII && emType != (*m_emType))
 			{
-				printf("[CWordBase::Cut_Word]Dictory and Sentence character set mismatching.\n");
+				printf("[CWordBase::Cut_Word]Dictory and Sentence character set mismatching(emType=%d)(m_emType=%d).\n", emType, (*m_emType));
 				return -1;
 			}
 		}
@@ -338,9 +344,9 @@ int CWordBase::Cut(const char* pSentence, vector<string>& vecWord)
 		if(emType != WORD_TYPE_UNKNOW)
 		{
 			i = i + objRune.m_nRuneLen;
-			if(emType != WORD_TYPE_ASCII && emType != m_emType)
+			if(emType != WORD_TYPE_ASCII && emType != (*m_emType))
 			{
-				printf("[CWordBase::Cut]Dictory and Sentence character set mismatching.\n");
+				printf("[CWordBase::Cut]Dictory and Sentence character set mismatching(emType=%d)(m_emType=%d).\n", emType, (*m_emType));
 				return -1;
 			}			
 		}
@@ -437,9 +443,9 @@ int CWordBase::Add_Word(const char* pWord)
 		if(emType != WORD_TYPE_UNKNOW)
 		{
 			i = i + pRune->m_nRuneLen;
-			if(emType != WORD_TYPE_ASCII && emType != m_emType)
+			if(emType != WORD_TYPE_ASCII && emType != (*m_emType))
 			{
-				printf("[CWordBase::Cut_Word]Dictory and Sentence character set mismatching.\n");
+				printf("[CWordBase::Cut_Word]Dictory and Sentence character set mismatching(emType=%d)(m_emType=%d).\n", emType, (*m_emType));
 				return -1;
 			}
 		}

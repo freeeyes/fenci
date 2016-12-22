@@ -33,6 +33,6 @@ private:
 private:
 	_RuneLinkNode*            m_pWordRoot;
 	CNodePool                 m_objNodePool;
-	ENUM_WORD_TYPE            m_emType;        //当前字典字符集，(UTF8或者GBK)
+	int*                      m_emType;        //当前字典字符集，(UTF8或者GBK)
 };
 #endif

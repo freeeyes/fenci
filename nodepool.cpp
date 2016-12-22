@@ -79,7 +79,7 @@ size_t CNodePool::Init(int nPoolCount, char* pData)
 	return nPos;
 }
 
-size_t Load(int nPoolCount, char* pData)
+size_t CNodePool::Load(int nPoolCount, char* pData)
 {
 	Close();
 	
