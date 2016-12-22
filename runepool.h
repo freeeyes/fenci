@@ -84,7 +84,7 @@ struct _Rune
 	}
 	
 	//重载比较运算符
-	bool operator==(_Rune& rhs) const
+	bool operator == (_Rune& rhs) const
 	{
 		if(rhs.m_nRuneLen != this->m_nRuneLen)
 		{
@@ -100,6 +100,19 @@ struct _Rune
 		}
 		return true;
 	}
+	
+	_Rune& operator = (const _Rune& ar)
+	{
+		this->m_emType   = ar.m_emType;
+		this->m_nRuneLen = ar.m_nRuneLen;
+		this->m_nIndex   = ar.m_nIndex;    //记录在Pool中的下标
+		this->m_nFlag    = ar.m_nFlag;     //转化为数字的标记
+		if(ar.m_nRuneLen > 0)
+		{ 
+			memcpy(this->m_szRune, ar.m_szRune, ar.m_nRuneLen);	
+		}
+		return *this;
+	}	
 };
 
 class CRunePool

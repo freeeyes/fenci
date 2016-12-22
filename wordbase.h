@@ -13,7 +13,8 @@ public:
 	CWordBase();
 	~CWordBase(); 
 	
-	bool Init(const char* pDictFile, int nPoolSize);
+	bool Init(const char* pDictFile, int nPoolSize, char* pData);
+	bool Load(int nPoolSize, char* pData);
 	void Close();
 	
 	int Add_Word(const char* pWord);
@@ -23,7 +24,7 @@ public:
 	
 private:
 	ENUM_WORD_TYPE Get_Rune_From_String(const char* pWord, int nBegin, int nLen, _Rune* pRune);
-	_RuneLinkNode* Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, size_t stRune);
+	_RuneLinkNode* Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune);
 	
 	void DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer);
 	
@@ -31,7 +32,6 @@ private:
 	
 private:
 	_RuneLinkNode*            m_pWordRoot;
-	CRunePool                 m_objRunePool;
 	CNodePool                 m_objNodePool;
 	ENUM_WORD_TYPE            m_emType;        //当前字典字符集，(UTF8或者GBK)
 };

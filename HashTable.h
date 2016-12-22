@@ -12,18 +12,14 @@ enum EM_HASH_STATE
 };
 
 //hash表结构
-template <class T>
 struct _Hash_Table_Cell 
 {
 	char  m_cExists;                       //当前块是否已经使用,1已经使用，0没有被使用
-	char* m_szKey;                         //当前的key值，没有则为空
-	int   m_nKeySize;                      //当前key数据长度
 	int   m_nNextKeyIndex;                 //链表信息，如果主键有冲突,记录下一个冲突主键的位置
 	int   m_nProvKeyIndex;                 //链表信息，如果主键有冲突,记录上一个冲突主键的位置
 	unsigned long m_uHashA;                //第二次的hashkey值
 	unsigned long m_uHashB;                //第三次的hashkey值 
-	T*    m_pValue;                        //当前数据体指针
-	int   m_nValueSize;                    //当前数据体长度
+	int     m_nValue;                      //当前数据体
 	
 	_Hash_Table_Cell()
 	{
@@ -33,26 +29,11 @@ struct _Hash_Table_Cell
 	void Init()
 	{
 		m_cExists       = 0;
-		m_nKeySize      = 0;
-		m_nValueSize    = 0;
 		m_uHashA        = 0;
 		m_uHashB        = 0;
 		m_nNextKeyIndex = -1;
 		m_nProvKeyIndex = -1;
-		m_szKey         = NULL;
-		m_pValue        = NULL;		
-	}
-	
-	void Set_Key(char* pKey, int nKeySize)
-	{
-		m_szKey         = pKey;
-		m_nKeySize      = nKeySize;
-	}
-	
-	void Set_Value(T* pValue, int nValueSize)
-	{
-		m_pValue        = pValue;
-		m_nValueSize    = nValueSize;
+		m_nValue        = 0;
 	}
 	
 	void Clear()
@@ -60,21 +41,11 @@ struct _Hash_Table_Cell
 		m_cExists       = 0;
 		m_uHashA        = 0;
 		m_uHashB        = 0;
-		//m_nNextKeyIndex = -1;
-		//m_nProvKeyIndex = -1;		
-		if(NULL != m_szKey)	
-		{
-			memset(m_szKey, 0, m_nKeySize);		
-		}
-		if(NULL != m_pValue)
-		{
-			m_pValue = NULL;
-		}
+		m_nValue        = 0;
 	}  
 };
 
 //hashTable类
-template <class T>
 class CHashTable
 {
 public:
@@ -83,19 +54,40 @@ public:
 		m_lpTable    = NULL;
 		m_nCount     = 0;
 		m_nUsed      = 0;
-		m_nKeySize   = 0;
-		m_nValueSize = 0;
+		m_cIsLocal   = 0;
 		
-		memset(m_cryptTable, 0, sizeof(m_cryptTable));
-		
-		//初始化加密数据串
-		prepareCryptTable();
+		m_pcryptTable = NULL;
 	}	
 	
 	~CHashTable()
 	{
 		Close();
 	}
+	
+	void Init(char* pData, int nHashCount, char* pcryptTable)
+	{
+		m_lpTable    = NULL;
+		m_nCount     = 0;
+		m_nUsed      = 0;
+		m_cIsLocal   = 0;
+		
+		m_pcryptTable = NULL;		
+		
+		Set_Base_Addr(pData, nHashCount);	
+		
+		if(NULL == pcryptTable)
+		{
+			m_pcryptTable = new char[1280];
+			memset(m_pcryptTable, 0, 1280);
+			prepareCryptTable();
+			m_cIsLocal    = 0;
+		}
+		else
+		{
+			m_pcryptTable = pcryptTable;
+			m_cIsLocal    = 1;
+		}
+	}	
 
 	void Close()
 	{
@@ -110,50 +102,12 @@ public:
 	//设置一个已知的内存数组块(必须初始化调用)
 	void Set_Base_Addr(char* pData, int nCount)
 	{
-		m_lpTable = (_Hash_Table_Cell<T>*)pData;
+		m_lpTable = (_Hash_Table_Cell* )pData;
 		m_nCount  = nCount;
 		for(int i = 0; i < m_nCount; i++)
 		{
 			m_lpTable[i].Init();
 		}
-	}	
-	
-	//设置一个Hash Key的数组块(必须初始化调用)
-	void Set_Base_Key_Addr(char* pData, int nSize, int nKeySize)
-	{
-		m_nKeySize    = nKeySize;
-		int nCurrSize = 0;
-		for(int i = 0; i < m_nCount; i++)
-		{
-			nCurrSize = nKeySize * (i + 1);
-			if(nCurrSize <= nSize)
-			{
-				m_lpTable[i].Set_Key(pData + (nKeySize * i), nKeySize);
-			}
-			else
-			{
-				return;
-			}
-		}	
-	}
-	
-	//设置一组Hash Value的地址块(必须初始化调用)
-	void Set_Base_Value_Addr(char* pData, int nSize, int nValueSize)
-	{
-		m_nValueSize = nValueSize;
-		int nCurrSize = 0;
-		for(int i = 0; i < m_nCount; i++)
-		{
-			nCurrSize = nValueSize * (i + 1);
-			if(nCurrSize <= nSize)
-			{
-				m_lpTable[i].Set_Value((T* )(pData + (nValueSize * i)), nValueSize);
-			}
-			else
-			{
-				return;
-			}
-		}				
 	}
 	
 	//得到当前缓冲块总个数
@@ -171,11 +125,11 @@ public:
 	//得到整体数据内存大小
 	size_t Get_Size()
 	{
-		return (sizeof(_Hash_Table_Cell<T>) + m_nKeySize + m_nValueSize) * m_nCount;
+		return sizeof(_Hash_Table_Cell) * m_nCount;
 	}
 
 	//得到数组指定位置的数据
-	T* Get_Index(int nIndex)
+	int Get_Index(int nIndex)
 	{
 		if(nIndex < 0 || nIndex > m_nCount - 1)
 		{
@@ -186,7 +140,7 @@ public:
 			if(m_lpTable[nIndex].m_cExists == 1)
 			{
 				//正在使用，返回数据
-				return m_lpTable[nIndex].m_pValue;
+				return m_lpTable[nIndex].m_nValue;
 			}
 			else
 			{
@@ -219,7 +173,7 @@ public:
 	}
 
 	//设置指定hash表中位置的数值
-	int Set_Index(int nIndex, char* lpszString, T* pT)
+	int Set_Index(int nIndex, char* lpszString, int nValue)
 	{
 		const int HASH_A = 1, HASH_B = 2;
 		if(nIndex < 0 || nIndex > m_nCount - 1)
@@ -234,24 +188,17 @@ public:
 		else
 		{
 			m_lpTable[nIndex].m_cExists = 1;
-			if(NULL != m_lpTable[nIndex].m_szKey)
-			{
-#ifndef WIN32
-				sprintf(m_lpTable[nIndex].m_szKey, "%s", lpszString);
-#else
-				sprintf_s(m_lpTable[nIndex].m_szKey, m_lpTable[nIndex].m_nKeySize, "%s", lpszString);
-#endif
-			}
+
 			m_lpTable[nIndex].m_uHashA = HashString(lpszString, HASH_A);
 			m_lpTable[nIndex].m_uHashB = HashString(lpszString, HASH_B);
-			m_lpTable[nIndex].m_pValue = pT;
+			m_lpTable[nIndex].m_nValue = nValue;
 			m_nUsed++;
 			return nIndex;
 		}
 	}
 	
 	//添加一个Hash数据块
-	int Add_Hash_Data(const char* pKey, T* pValue)
+	int Add_Hash_Data(const char* pKey, int nValue)
 	{
 		if(NULL == m_lpTable)
 		{
@@ -267,30 +214,30 @@ public:
 		}
 		else
 		{
-			m_lpTable[nPos].m_pValue = pValue;
+			m_lpTable[nPos].m_nValue = nValue;
 			m_nUsed++;
 			return nPos;
 		}		
 	}
 	
 	//获得一个已有映射对应数值
-	T* Get_Hash_Box_Data(const char* pKey)
+	int Get_Hash_Box_Data(const char* pKey)
 	{
 		if(NULL == m_lpTable)
 		{
 			//没有找到共享内存
-			return NULL;
+			return 0;
 		}	
 		
 		int nPos = GetHashTablePos(pKey, EM_SELECT);
 		if(-1 == nPos)
 		{
 			//没有找到
-			return NULL;
+			return 0;
 		}
 		else
 		{
-			return m_lpTable[nPos].m_pValue;
+			return m_lpTable[nPos].m_nValue;
 		}			
 	}
 	
@@ -318,7 +265,7 @@ private:
 	      {
 	      	printf("[prepareCryptTable]index2=%u.\n", (unsigned int)index2);
 	      }
-	      m_cryptTable[index2] = (char)(temp1 | temp2); 
+	      m_pcryptTable[index2] = (char)(temp1 | temp2); 
 	    } 
 	  } 		
 	}
@@ -332,7 +279,7 @@ private:
 		while(*key != 0)
 		{
 			ch = toupper(*key++);
-			seed1 = m_cryptTable[(dwHashType << 8) + ch] ^ (seed1 + seed2);
+			seed1 = m_pcryptTable[(dwHashType << 8) + ch] ^ (seed1 + seed2);
 			seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
 		}
 		
@@ -382,14 +329,7 @@ private:
 							m_lpTable[i].m_cExists = 1;
 							m_lpTable[i].m_uHashA  = uHashA;
 							m_lpTable[i].m_uHashB  = uHashB;
-							if(NULL != m_lpTable[i].m_szKey)
-							{
-#ifndef WIN32
-								sprintf(m_lpTable[i].m_szKey, "%s", lpszString);
-#else
-								sprintf_s(m_lpTable[i].m_szKey, m_lpTable[i].m_nKeySize, "%s", lpszString);
-#endif
-							}
+							
 							//记录链表信息
 							m_lpTable[nStartIndex].m_nNextKeyIndex = i;
 							m_lpTable[i].m_nProvKeyIndex           = nStartIndex;
@@ -407,14 +347,6 @@ private:
 							m_lpTable[i].m_cExists = 1;
 							m_lpTable[i].m_uHashA  = uHashA;
 							m_lpTable[i].m_uHashB  = uHashB;
-							if(NULL != m_lpTable[i].m_szKey)
-							{
-#ifndef WIN32
-								sprintf(m_lpTable[i].m_szKey, "%s", lpszString);
-#else
-								sprintf_s(m_lpTable[i].m_szKey, m_lpTable[i].m_nKeySize, "%s", lpszString);
-#endif
-							}	
 
 							m_lpTable[nStartIndex].m_nNextKeyIndex = i;
 							m_lpTable[i].m_nProvKeyIndex           = nStartIndex;
@@ -436,14 +368,6 @@ private:
 						m_lpTable[nStartIndex].m_cExists = 1;
 						m_lpTable[nStartIndex].m_uHashA  = uHashA;
 						m_lpTable[nStartIndex].m_uHashB  = uHashB;
-						if(NULL != m_lpTable[nStartIndex].m_szKey)
-						{
-#ifndef WIN32
-							sprintf(m_lpTable[nStartIndex].m_szKey, "%s", lpszString);
-#else
-							sprintf_s(m_lpTable[nStartIndex].m_szKey, m_lpTable[nStartIndex].m_nKeySize, "%s", lpszString);
-#endif
-						}	
 
 						return nStartIndex;
 					}
@@ -487,14 +411,6 @@ private:
 				m_lpTable[uHashPos].m_cExists = 1;
 				m_lpTable[uHashPos].m_uHashA  = uHashA;
 				m_lpTable[uHashPos].m_uHashB  = uHashB;
-				if(NULL != m_lpTable[uHashPos].m_szKey)
-				{
-#ifndef WIN32
-					sprintf(m_lpTable[uHashPos].m_szKey, "%s", lpszString);
-#else
-					sprintf_s(m_lpTable[uHashPos].m_szKey, m_lpTable[uHashPos].m_nKeySize, "%s", lpszString);
-#endif
-				}
 
 				//printf("[GetHashTablePos] return uHashPos=%d 1.\n", (int)uHashPos);
 				return (int)uHashPos;
@@ -552,12 +468,11 @@ private:
 	}
 	
 private:
-	_Hash_Table_Cell<T>* m_lpTable;	
-	char                 m_cryptTable[1280];
+	_Hash_Table_Cell*    m_lpTable;	
+	char*                m_pcryptTable;
+	char                 m_cIsLocal;  //0内部指针，1外部指针
 	int                  m_nUsed;
 	int                  m_nCount;
-	int                  m_nKeySize;
-	int                  m_nValueSize;
 };
 
 

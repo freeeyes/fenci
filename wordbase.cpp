@@ -11,7 +11,7 @@ CWordBase::~CWordBase()
 	Close();
 }
 
-bool CWordBase::Init(const char* pDictFile, int nPoolSize)
+bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 {
 	string strLine;
 	char   szLine[50] = {'\0'};
@@ -19,11 +19,11 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize)
 	_RuneLinkNode* pCurrTempNode = NULL;
 	
 	//初始化Rune内存池
-	m_objRunePool.Init(nPoolSize);	
-	m_objNodePool.Init(nPoolSize);
+	size_t nSize = m_objNodePool.Init(nPoolSize, pData);
+	printf("[Main]curr stPoolSize=%d.\n", nSize);
 	
 	//初始化树
-	m_pWordRoot = m_objNodePool.Create();
+	m_pWordRoot = m_objNodePool.CreateRoot();
 	
 	ifstream ifs(pDictFile);
 	while(!ifs.eof())
@@ -51,16 +51,12 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize)
 #endif 			
 		}
 		
+		_Rune objRune;
+			
 		for(int i = 0; i < nLen - 1;)
 		{
-			size_t stRune = m_objRunePool.Create_Offset();
-			if(0 == stRune)
-			{
-				printf("[CWordBase::Init]RunePool is full.\n");
-				return false;
-			}
-			
-			_Rune* pRune = m_objRunePool.Get_Offset(stRune);
+			objRune.Clear();
+			_Rune* pRune = &objRune;
 			ENUM_WORD_TYPE emType = Get_Rune_From_String(szLine, i, nLen, pRune);
 			if(emType != WORD_TYPE_UNKNOW)
 			{
@@ -77,7 +73,7 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize)
 				break;
 			}	
 			
-			pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, stRune);
+			pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
 
 			if(i == nLen - 1)
 			{
@@ -95,46 +91,54 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize)
 	return true;
 }
 
+bool CWordBase::Load(int nPoolSize, char* pData)
+{
+	//初始化Rune内存池
+	size_t nSize = m_objNodePool.Load(nPoolSize, pData);
+	printf("[Main]curr stPoolSize=%d.\n", nSize);
+	
+	//初始化树
+	m_pWordRoot = m_objNodePool.CreateRoot();	
+}
+
 void CWordBase::DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer)
 {
 	//递归显示所有子节点
-	int nMapSize = (int)pRuneNode->m_hmapRuneNextMap.size();
+	int nMapSize = (int)pRuneNode->m_hmapRuneNextMap.Get_Used_Count();
 	//printf("[CWordBase::DisplayTempNodeList]pRuneNode=%d,size=%d.\n", nLayer, nMapSize);
 	if(nMapSize > 0)
 	{
 		nLayer++;
-		for(_RuneLinkNode::hmapRuneNextMap::iterator b = pRuneNode->m_hmapRuneNextMap.begin(); b != pRuneNode->m_hmapRuneNextMap.end(); b++)
+		for(int i = 0; i < pRuneNode->m_hmapRuneNextMap.Get_Count(); i++)
 		{
-			pRuneNode = (_RuneLinkNode* )b->second;
-			
-			if(pRuneNode->m_hmapRuneNextMap.size() > 0)
+			int nOffset = pRuneNode->m_hmapRuneNextMap.Get_Index(i);
+			if(nOffset > 0)
 			{
-				if(0 != pRuneNode->m_stRune)
+				pRuneNode = m_objNodePool.Get_NodeOffset_Ptr(nOffset);
+				if(pRuneNode->m_hmapRuneNextMap.Get_Used_Count() > 0)
 				{
-					_Rune* pRune = m_objRunePool.Get_Offset(pRuneNode->m_stRune);
+					_Rune* pRune = &pRuneNode->m_objRune;
 					printf("<%d>", nLayer);
 					pRune->DisPlay();
-					printf("-->");
-				}					
-			}
-			
-			if(strlen(pRuneNode->m_pWord) > 0 && pRuneNode->m_hmapRuneNextMap.size() > 0)
-			{
-				printf("1.Value=%s.\n", pRuneNode->m_pWord);
-			}				
-						
-			DisplayTempNodeList(pRuneNode, nLayer);				
+					printf("-->");				
+				}
+				
+				if(strlen(pRuneNode->m_pWord) > 0 && pRuneNode->m_hmapRuneNextMap.Get_Count() > 0)
+				{
+					printf("1.Value=%s.\n", pRuneNode->m_pWord);
+				}
+				
+				DisplayTempNodeList(pRuneNode, nLayer);				
+			}		
 		}
 	}
 	else
 	{
-		if(0 != pRuneNode->m_stRune)
-		{
-			_Rune* pRune = m_objRunePool.Get_Offset(pRuneNode->m_stRune);
-			printf("<%d>", nLayer);
-			pRune->DisPlay();
-			printf("-->");
-		}
+		_Rune* pRune = &pRuneNode->m_objRune;
+		printf("<%d>", nLayer);
+		pRune->DisPlay();
+		printf("-->");
+		
 		if(strlen(pRuneNode->m_pWord) > 0)
 		{
 			printf("2.Value=%s.\n", pRuneNode->m_pWord);
@@ -147,28 +151,25 @@ void CWordBase::Close()
 	//删除词汇树	
 }
 
-_RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, size_t stRune)
+_RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune)
 {
-	_Rune* pRune = m_objRunePool.Get_Offset(stRune);
-	_RuneLinkNode::hmapRuneNextMap::iterator f = pRuneNode->m_hmapRuneNextMap.find(pRune->Get_Number());
-	if(f != pRuneNode->m_hmapRuneNextMap.end())
+	int nOfficeSet = pRuneNode->m_hmapRuneNextMap.Get_Hash_Box_Data((char* )pRune->m_szRune);
+	if(nOfficeSet > 0)
 	{
-		_RuneLinkNode* pCurrRuneNode = (_RuneLinkNode* )f->second;
+		_RuneLinkNode* pCurrRuneNode = m_objNodePool.Get_NodeOffset_Ptr(nOfficeSet);
 		
-		_Rune* pCurrRune = m_objRunePool.Get_Offset(pCurrRuneNode->m_stRune);
-		
-		if((*pCurrRune) == (*pRune))
+		if(pCurrRuneNode->m_objRune == (*pRune))
 		{
 			//如果找到了，则返回当前节点
-			m_objRunePool.Delete(pRune);
 			return pCurrRuneNode;
 		}
 	}
 	
 	//如果没找到，则创建新的
 	_RuneLinkNode* pNode = m_objNodePool.Create();
-	pNode->m_stRune = stRune;
-	pRuneNode->m_hmapRuneNextMap.insert(pair<int, _RuneLinkNode*>(pRune->Get_Number(), pNode));
+	int nNodeOffset = m_objNodePool.Get_Node_Offset(pNode);
+	pNode->m_objRune = (*pRune);
+	pRuneNode->m_hmapRuneNextMap.Add_Hash_Data((char* )pRune->m_szRune, nNodeOffset);
 	return pNode;
 }
 
@@ -220,11 +221,10 @@ ENUM_WORD_TYPE CWordBase::Get_Rune_From_String(const char* pWord, int nBegin, in
 
 _RuneLinkNode* CWordBase::Find(_Rune* pRune, _RuneLinkNode* pRuneLinkNode)
 {
-	if(pRuneLinkNode->m_hmapRuneNextMap.size() == 0)
+	if(pRuneLinkNode->m_hmapRuneNextMap.Get_Used_Count() == 0)
 	{
 		//找到了末尾
-		_Rune* pCurrRune = m_objRunePool.Get_Offset(pRuneLinkNode->m_stRune);	
-		if((*pRune) == (*pCurrRune))
+		if((*pRune) == pRuneLinkNode->m_objRune)
 		{
 			return pRuneLinkNode;
 		}
@@ -235,15 +235,15 @@ _RuneLinkNode* CWordBase::Find(_Rune* pRune, _RuneLinkNode* pRuneLinkNode)
 	}
 	
 	//printf("[CWordBase::Find]pRune=%d, size=%d.\n", pRune->Get_Number(), pRuneLinkNode->m_hmapRuneNextMap.size());
-	_RuneLinkNode::hmapRuneNextMap::iterator f = pRuneLinkNode->m_hmapRuneNextMap.find(pRune->Get_Number());
-	if(f == pRuneLinkNode->m_hmapRuneNextMap.end())
+	int nOfficeSet = pRuneLinkNode->m_hmapRuneNextMap.Get_Hash_Box_Data((char* )pRune->m_szRune);
+	if(0 == nOfficeSet)
 	{
 		//没有找到当前字符
 		return NULL;
 	}
 	else
 	{
-		return f->second;	
+		return m_objNodePool.Get_NodeOffset_Ptr(nOfficeSet);	
 	}
 }
 
@@ -427,16 +427,12 @@ int CWordBase::Add_Word(const char* pWord)
 #endif 			
 	}
 	
+	_Rune objRune;
 	for(int i = 0; i < nLen - 1;)
 	{
-		size_t stRune = m_objRunePool.Create_Offset();
-		if(0 == stRune)
-		{
-			printf("[CWordBase::Init]RunePool is full.\n");
-			return false;
-		}
+		objRune.Clear();
 		
-		_Rune* pRune = m_objRunePool.Get_Offset(stRune);
+		_Rune* pRune = &objRune;
 		ENUM_WORD_TYPE emType = Get_Rune_From_String(szLine, i, nLen, pRune);
 		if(emType != WORD_TYPE_UNKNOW)
 		{
@@ -453,7 +449,7 @@ int CWordBase::Add_Word(const char* pWord)
 			break;
 		}	
 		
-		pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, stRune);
+		pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
 
 		if(i == nLen - 1)
 		{
