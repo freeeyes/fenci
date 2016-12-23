@@ -78,6 +78,10 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 			}	
 			
 			pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
+			if(NULL == pCurrTempNode)
+			{
+				return -1;
+			}
 
 			if(i == nLen - 1)
 			{
@@ -173,9 +177,21 @@ _RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune*
 	
 	//如果没找到，则创建新的
 	_RuneLinkNode* pNode = m_objNodePool.Create();
+	if(NULL == pNode)
+	{
+		printf("[CWordBase::Set_HashMap_Word_Tree]node pool is empty.\n");
+		return NULL;
+	}
+	
 	int nNodeOffset = m_objNodePool.Get_Node_Offset(pNode);
 	pNode->m_objRune = (*pRune);
-	pRuneNode->m_hmapRuneNextMap.Add_Hash_Data((char* )pRune->m_szRune, nNodeOffset);
+	int nPos = pRuneNode->m_hmapRuneNextMap.Add_Hash_Data((char* )pRune->m_szRune, nNodeOffset);
+	if(-1 == nPos)
+	{
+		printf("[CWordBase::Set_HashMap_Word_Tree]tree node child is full.\n");
+		m_objNodePool.Delete(pNode);
+		return NULL;		
+	}
 	return pNode;
 }
 
@@ -456,6 +472,10 @@ int CWordBase::Add_Word(const char* pWord)
 		}	
 		
 		pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
+		if(NULL == pCurrTempNode)
+		{
+			return -1;
+		}
 
 		if(i == nLen - 1)
 		{
