@@ -2,9 +2,9 @@
 
 CNodePool::CNodePool()
 {
-	m_pCryptTable  = NULL;
-	m_pBase        = NULL;
-	m_NodePoolList = NULL;
+	m_pCryptTable   = NULL;
+	m_pBase         = NULL;
+	m_NodePoolList  = NULL;
 }
 
 CNodePool::~CNodePool()
@@ -64,13 +64,22 @@ size_t CNodePool::Init(int nPoolCount, char* pData)
 			nPos += nMapSize;
 			//printf("[CNodePool::Init](0)nPos=%d.\n", nPos);
 		}
-		else
+		else if(i <= MAIN_DICT_MAP_COUNT)
 		{
 			size_t nMapSize = sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT;
 			m_NodePoolList[i].Init(&pData[nPos], CHILD_DICT_MAP_COUNT, m_pCryptTable);
 			m_NodePoolList[i].Set_Index(i);
 			nPos += nMapSize;
 		}
+		else
+		{
+			size_t nMapSize = sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT;
+			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Init(&pData[nPos], END_DICT_MAP_COUNT, m_pCryptTable);
+			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Set_Index(i);
+			nPos += nMapSize;			
+		}
+		
+		//printf("[CNodePool::Init](%d)nPos=%d.\n", i, nPos);
 	}
 	
 	m_nPoolCount   = nPoolCount;
@@ -101,12 +110,19 @@ size_t CNodePool::Load(int nPoolCount, char* pData)
 			nPos += nMapSize;
 			//printf("[CNodePool::Init](0)nPos=%d.\n", nPos);
 		}
-		else
+		else if(i <= MAIN_DICT_MAP_COUNT)
 		{
 			size_t nMapSize = sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT;
 			m_NodePoolList[i].Init(&pData[nPos], CHILD_DICT_MAP_COUNT, m_pCryptTable);
 			m_NodePoolList[i].Set_Index(i);
 			nPos += nMapSize;
+		}
+		else
+		{
+			size_t nMapSize = sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT;
+			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Init(&pData[nPos], END_DICT_MAP_COUNT, m_pCryptTable);
+			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Set_Index(i);
+			nPos += nMapSize;			
 		}
 	}
 	
@@ -127,11 +143,18 @@ _RuneLinkNode* CNodePool::CreateRoot()
 	return &m_NodePoolList[0];
 }
 
-_RuneLinkNode* CNodePool::Create()
+_RuneLinkNode* CNodePool::Create(int nLayer)
 {
 	if(NULL == m_NodePoolList)
 	{
 		return NULL;
+	}
+	
+	int nStart = 0;
+	if(nLayer > 2)
+	{
+		//大于2层的，以10个节点为准
+		m_nCurrIndex += MAIN_DICT_MAP_COUNT + 1;
 	}
 	
 	if(m_NodePoolList[m_nCurrIndex].m_cUsed == 0)
@@ -143,7 +166,7 @@ _RuneLinkNode* CNodePool::Create()
 			m_nCurrIndex = 1;
 		}
 		m_NodePoolList[m_nCurrIndex].m_cUsed = 1;
-		return &m_NodePoolList[m_nCurrIndex];
+		return &m_NodePoolList[m_nCurrIndex++];
 	}
 	else
 	{
@@ -162,8 +185,13 @@ _RuneLinkNode* CNodePool::Create()
 			}
 		}
 		
+		int nStart = 1;
+		if(nLayer > 2)
+		{
+			nStart += MAIN_DICT_MAP_COUNT;
+		}
 		//没找到，再重头开始找
-		for(int i = 0; i < m_nCurrIndex - 1; i++)
+		for(int i = nStart; i < m_nCurrIndex - 1; i++)
 		{
 			if(m_NodePoolList[i].m_cUsed == 0)
 			{

@@ -13,8 +13,9 @@ using namespace std;
 #define MAX_WORD_LENGTH 50
 
 //节点类型不同的定义
-#define MAIN_DICT_MAP_COUNT  1000
+#define MAIN_DICT_MAP_COUNT  20000
 #define CHILD_DICT_MAP_COUNT 50
+#define END_DICT_MAP_COUNT   10
 
 //永久节点模型
 struct _RuneLinkNode
@@ -73,7 +74,7 @@ public:
 	void   Close();
 	
 	_RuneLinkNode* CreateRoot();
-	_RuneLinkNode* Create();
+	_RuneLinkNode* Create(int nLayer);
 	int Get_Node_Offset(_RuneLinkNode* pRuneLinkNode);
 	_RuneLinkNode* Get_NodeOffset_Ptr(int nOffset);
 	bool Delete(_RuneLinkNode* pNode);
@@ -86,7 +87,7 @@ private:
 	char*          m_pBase;          //整个内存开始地址
 	int            m_nPoolCount;
 	int            m_nCurrIndex;
-	_RuneLinkNode* m_NodePoolList;		
+	_RuneLinkNode* m_NodePoolList; //主节点和中间节点列表		
 };
 
 #endif

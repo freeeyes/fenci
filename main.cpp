@@ -6,18 +6,21 @@ int main()
 {
 	CWordBase objWordBase;
 	
-	int nPoolSize = 1000;
+	int nPoolSize = 1000000;
 	size_t stPoolSize = 1280 + sizeof(int) + sizeof(_RuneLinkNode)*nPoolSize 
-								+ sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT
-								+ (sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT) * (nPoolSize - 1);	
+								+ sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT + sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT * MAIN_DICT_MAP_COUNT
+								+ (sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT) * (nPoolSize - MAIN_DICT_MAP_COUNT - 1);	
+	
+	
 	printf("[Main]stPoolSize=%d.\n", stPoolSize);
 	
 	//使用共享内存创建
-	int nNodeCount = 1000;
+	int nNodeCount = 1000000;
 	shm_key obj_key = 30001;
 	shm_id obj_shm_id;
 	bool blCreate = true;
 	char* pData = Open_Share_Memory_API(obj_key, stPoolSize, obj_shm_id, blCreate);
+	//char* pData  = new char[stPoolSize];
 	if(NULL != pData)
 	{
 		if(blCreate == true)
@@ -33,12 +36,6 @@ int main()
 			objWordBase.Load(nNodeCount, pData);
 		}
 	}
-	
-	//使用普通内存创建
-	//char* pData = new char[stPoolSize];
-	//memset(pData, 0, stPoolSize);	
-	
-	//objWordBase.Init("./word.txt", 1000, pData);
 	
 	vector<string> objvecWord;
 	objWordBase.Cut_Word("哪里见过你呀,朋友", objvecWord);
@@ -83,8 +80,6 @@ int main()
                   printf("%s\n", objvecWord[i].c_str());
           }
   }	
-  
-  printf("[main]size_t=%d.\n", sizeof(size_t));
 	
 	/*
 	int u2PoolSize = 10000;

@@ -20,7 +20,7 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 	
 	//初始化Rune内存池
 	size_t nSize = m_objNodePool.Init(nPoolSize, pData);
-	printf("[Main]curr stPoolSize=%d.\n", nSize);
+	printf("[CWordBase::Init]nPoolSize=%d, stPoolSize=%d.\n", nPoolSize, nSize);
 	
 	m_emType    = (int* )&pData[nSize];
 	(*m_emType) = WORD_TYPE_ASCII;
@@ -55,7 +55,8 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 		}
 		
 		_Rune objRune;
-			
+		
+		int nLayer = 0;	
 		for(int i = 0; i < nLen - 1;)
 		{
 			objRune.Clear();
@@ -77,11 +78,14 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 				break;
 			}	
 			
-			pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
+			//printf("[CWordBase::Add_Word]i=%d.\n", i);
+			pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune, nLayer);
 			if(NULL == pCurrTempNode)
 			{
 				return -1;
 			}
+			
+			nLayer++;
 
 			if(i == nLen - 1)
 			{
@@ -161,7 +165,7 @@ void CWordBase::Close()
 	//删除词汇树	
 }
 
-_RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune)
+_RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune, int nLayer)
 {
 	int nOfficeSet = pRuneNode->m_hmapRuneNextMap.Get_Hash_Box_Data((char* )pRune->m_szRune);
 	if(nOfficeSet > 0)
@@ -176,7 +180,8 @@ _RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune*
 	}
 	
 	//如果没找到，则创建新的
-	_RuneLinkNode* pNode = m_objNodePool.Create();
+	_RuneLinkNode* pNode = m_objNodePool.Create(nLayer);
+	//printf("[CWordBase::Set_HashMap_Word_Tree]pNode=0x%08x.\n", pNode);
 	if(NULL == pNode)
 	{
 		printf("[CWordBase::Set_HashMap_Word_Tree]node pool is empty.\n");
@@ -449,6 +454,7 @@ int CWordBase::Add_Word(const char* pWord)
 #endif 			
 	}
 	
+	int nLayer = 0;	
 	_Rune objRune;
 	for(int i = 0; i < nLen - 1;)
 	{
@@ -461,7 +467,7 @@ int CWordBase::Add_Word(const char* pWord)
 			i = i + pRune->m_nRuneLen;
 			if(emType != WORD_TYPE_ASCII && emType != (*m_emType))
 			{
-				printf("[CWordBase::Cut_Word]Dictory and Sentence character set mismatching(emType=%d)(m_emType=%d).\n", emType, (*m_emType));
+				printf("[CWordBase::Add_Word]Dictory and Sentence character set mismatching(emType=%d)(m_emType=%d).\n", emType, (*m_emType));
 				return -1;
 			}
 		}
@@ -471,11 +477,13 @@ int CWordBase::Add_Word(const char* pWord)
 			break;
 		}	
 		
-		pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune);
+		pCurrTempNode = Set_HashMap_Word_Tree(pCurrTempNode, pRune, nLayer);
 		if(NULL == pCurrTempNode)
 		{
 			return -1;
 		}
+		
+		nLayer++;
 
 		if(i == nLen - 1)
 		{
