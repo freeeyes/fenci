@@ -122,7 +122,7 @@ void CWordBase::DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer)
 {
 	//递归显示所有子节点
 	int nMapSize = (int)pRuneNode->m_hmapRuneNextMap.Get_Used_Count();
-	printf("[CWordBase::DisplayTempNodeList]pRuneNode=%d,size=%d.\n", nLayer, nMapSize);
+	//printf("(nLayer=%d,size=%d)", nLayer, nMapSize);
 	if(nMapSize > 0)
 	{
 		nLayer++;
@@ -131,8 +131,9 @@ void CWordBase::DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer)
 			int nOffset = pRuneNode->m_hmapRuneNextMap.Get_Index(i);
 			if(nOffset > 0)
 			{
-				pRuneNode = m_objNodePool.Get_NodeOffset_Ptr(nOffset);
-				if(pRuneNode->m_hmapRuneNextMap.Get_Used_Count() > 0)
+				//printf("<i=%d>", i);
+				_RuneLinkNode* pCurrRuneNode = m_objNodePool.Get_NodeOffset_Ptr(nOffset);
+				if(pCurrRuneNode->m_hmapRuneNextMap.Get_Used_Count() > 0)
 				{
 					_Rune* pRune = &pRuneNode->m_objRune;
 					printf("<%d>", nLayer);
@@ -140,12 +141,12 @@ void CWordBase::DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer)
 					printf("-->");				
 				}
 				
-				if(strlen(pRuneNode->m_pWord) > 0 && pRuneNode->m_hmapRuneNextMap.Get_Count() > 0)
+				if(strlen(pRuneNode->m_pWord) > 0 && pRuneNode->m_hmapRuneNextMap.Get_Used_Count() > 0)
 				{
 					printf("1.Value=%s.\n", pRuneNode->m_pWord);
 				}
 				
-				DisplayTempNodeList(pRuneNode, nLayer);				
+				DisplayTempNodeList(pCurrRuneNode, nLayer);				
 			}		
 		}
 	}
