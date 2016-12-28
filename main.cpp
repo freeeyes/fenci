@@ -6,7 +6,7 @@ int main()
 {
 	CWordBase objWordBase;
 	
-	int nPoolSize = 1000000;
+	int nPoolSize = 100;
 	size_t stPoolSize = 1280 + sizeof(int) + sizeof(_RuneLinkNode)*nPoolSize 
 								+ sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT + sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT * MAIN_DICT_MAP_COUNT
 								+ (sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT) * (nPoolSize - MAIN_DICT_MAP_COUNT - 1);	
@@ -15,7 +15,7 @@ int main()
 	printf("[Main]stPoolSize=%d.\n", stPoolSize);
 	
 	//使用共享内存创建
-	int nNodeCount = 1000000;
+	int nNodeCount = 100;
 	shm_key obj_key = 30001;
 	shm_id obj_shm_id;
 	bool blCreate = true;
@@ -38,6 +38,7 @@ int main()
 	}
 	
 	vector<string> objvecWord;
+	/*
 	objWordBase.Cut_Word("哪里见过你呀,朋友", objvecWord);
 	
 	printf("[Cut_Word]Word size=%d.\n", objvecWord.size());
@@ -45,10 +46,11 @@ int main()
 	{
 		printf("[Cut_Word]Word=%s.\n", objvecWord[i].c_str());
 	}
+	*/
 	
 	objvecWord.clear();
 	
-	objWordBase.Cut("哪里见过你呀,朋友", objvecWord);
+	objWordBase.Cut("09azAZ哪里见过你呀,朋友", objvecWord);
 	printf("[Cut]");
 	for(int i = 0; i < objvecWord.size(); i++)
 	{
@@ -58,10 +60,11 @@ int main()
 		}
 		else
 		{
-			printf("%s\n", objvecWord[i].c_str());
+			printf("%s/\n", objvecWord[i].c_str());
 		}
 	}
 	
+	/*
 	objWordBase.Add_Word("朋友");
 
 
@@ -80,6 +83,7 @@ int main()
                   printf("%s\n", objvecWord[i].c_str());
           }
   }	
+  */
 	
 	/*
 	int u2PoolSize = 10000;

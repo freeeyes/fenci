@@ -51,6 +51,7 @@ size_t CNodePool::Init(int nPoolCount, char* pData)
 	prepareCryptTable();
 	nPos += 1280;
 	
+	printf("[CNodePool::Init]nPos=%d.\n", nPos);
 	m_NodePoolList = (_RuneLinkNode* )&pData[nPos];
 	nPos += sizeof(_RuneLinkNode) * nPoolCount;
 	
@@ -97,6 +98,7 @@ size_t CNodePool::Load(int nPoolCount, char* pData)
 	m_pCryptTable = pData;
 	nPos += 1280;
 	
+	printf("[CNodePool::Load]nPos=%d.\n", nPos);
 	m_NodePoolList = (_RuneLinkNode* )&pData[nPos];
 	nPos += sizeof(_RuneLinkNode) * nPoolCount;
 	
@@ -105,23 +107,23 @@ size_t CNodePool::Load(int nPoolCount, char* pData)
 		if(i == 0)
 		{
 			size_t nMapSize = sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT;
-			m_NodePoolList[i].Init(&pData[nPos], MAIN_DICT_MAP_COUNT, m_pCryptTable);
-			m_NodePoolList[i].Set_Index(i);
+			m_NodePoolList[i].Load(&pData[nPos], MAIN_DICT_MAP_COUNT, m_pCryptTable);
+			//m_NodePoolList[i].Set_Index(i);
 			nPos += nMapSize;
 			//printf("[CNodePool::Init](0)nPos=%d.\n", nPos);
 		}
 		else if(i <= MAIN_DICT_MAP_COUNT)
 		{
 			size_t nMapSize = sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT;
-			m_NodePoolList[i].Init(&pData[nPos], CHILD_DICT_MAP_COUNT, m_pCryptTable);
-			m_NodePoolList[i].Set_Index(i);
+			m_NodePoolList[i].Load(&pData[nPos], CHILD_DICT_MAP_COUNT, m_pCryptTable);
+			//m_NodePoolList[i].Set_Index(i);
 			nPos += nMapSize;
 		}
 		else
 		{
 			size_t nMapSize = sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT;
-			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Init(&pData[nPos], END_DICT_MAP_COUNT, m_pCryptTable);
-			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Set_Index(i);
+			m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Load(&pData[nPos], END_DICT_MAP_COUNT, m_pCryptTable);
+			//m_NodePoolList[i - MAIN_DICT_MAP_COUNT + 1].Set_Index(i);
 			nPos += nMapSize;			
 		}
 	}

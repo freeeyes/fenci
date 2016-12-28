@@ -10,12 +10,12 @@
 using namespace std;
 
 //最大一个词的长度
-#define MAX_WORD_LENGTH 50
+#define MAX_WORD_LENGTH 30
 
 //节点类型不同的定义
-#define MAIN_DICT_MAP_COUNT  20000
-#define CHILD_DICT_MAP_COUNT 50
-#define END_DICT_MAP_COUNT   10
+#define MAIN_DICT_MAP_COUNT  10
+#define CHILD_DICT_MAP_COUNT 5
+#define END_DICT_MAP_COUNT   5
 
 //永久节点模型
 struct _RuneLinkNode
@@ -40,6 +40,11 @@ struct _RuneLinkNode
 		memset(m_pWord, 0, MAX_WORD_LENGTH);		
 		
 		m_hmapRuneNextMap.Init(pData, nMapSize, pcryptTable);
+	}
+	
+	void Load(char* pData, int nMapSize, char* pcryptTable)
+	{		
+		m_hmapRuneNextMap.Load(pData, nMapSize, pcryptTable);		
 	}
 	
 	void Set_Index(int nIndex)

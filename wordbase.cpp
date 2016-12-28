@@ -97,8 +97,8 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 	}
 	
 	//展示链表内容
-	//int nLayer = 0;
-	//DisplayTempNodeList(m_pWordRoot, nLayer);
+	int nLayer = 0;
+	DisplayTempNodeList(m_pWordRoot, nLayer);
 	
 	return true;
 }
@@ -113,13 +113,16 @@ bool CWordBase::Load(int nPoolSize, char* pData)
 	
 	//初始化树
 	m_pWordRoot = m_objNodePool.CreateRoot();	
+	
+	int nLayer = 0;
+	DisplayTempNodeList(m_pWordRoot, nLayer);	
 }
 
 void CWordBase::DisplayTempNodeList(_RuneLinkNode* pRuneNode, int nLayer)
 {
 	//递归显示所有子节点
 	int nMapSize = (int)pRuneNode->m_hmapRuneNextMap.Get_Used_Count();
-	//printf("[CWordBase::DisplayTempNodeList]pRuneNode=%d,size=%d.\n", nLayer, nMapSize);
+	printf("[CWordBase::DisplayTempNodeList]pRuneNode=%d,size=%d.\n", nLayer, nMapSize);
 	if(nMapSize > 0)
 	{
 		nLayer++;

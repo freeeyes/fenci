@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_SINGLE_RUNE 5
+#define MAX_SINGLE_RUNE 4
 
 enum ENUM_WORD_TYPE
 {

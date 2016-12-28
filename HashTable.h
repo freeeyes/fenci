@@ -73,7 +73,7 @@ public:
 		
 		m_pcryptTable = NULL;		
 		
-		Set_Base_Addr(pData, nHashCount);	
+		Set_Base_Addr(pData, nHashCount, 0);	
 		
 		if(NULL == pcryptTable)
 		{
@@ -88,6 +88,20 @@ public:
 			m_cIsLocal    = 1;
 		}
 	}	
+	
+	void Load(char* pData, int nHashCount, char* pcryptTable)
+	{
+		m_lpTable     = NULL;
+		m_pcryptTable = NULL;
+		
+		Set_Base_Addr(pData, nHashCount, 1);	
+		
+		if(NULL != pcryptTable)
+		{
+			m_pcryptTable = pcryptTable;
+			m_cIsLocal    = 1;
+		}		
+	}
 
 	void Close()
 	{
@@ -99,14 +113,17 @@ public:
 		m_nCount = 0;
 	}
 	
-	//设置一个已知的内存数组块(必须初始化调用)
-	void Set_Base_Addr(char* pData, int nCount)
+	//设置一个已知的内存数组块(必须初始化调用),nInit是0重新初始化，1是不需要重新初始化
+	void Set_Base_Addr(char* pData, int nCount, int nInit)
 	{
 		m_lpTable = (_Hash_Table_Cell* )pData;
 		m_nCount  = nCount;
-		for(int i = 0; i < m_nCount; i++)
+		if(nInit == 0)
 		{
-			m_lpTable[i].Init();
+			for(int i = 0; i < m_nCount; i++)
+			{
+				m_lpTable[i].Init();
+			}
 		}
 	}
 	
