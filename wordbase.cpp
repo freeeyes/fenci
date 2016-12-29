@@ -185,7 +185,7 @@ _RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune*
 	
 	//如果没找到，则创建新的
 	_RuneLinkNode* pNode = m_objNodePool.Create(nLayer);
-	//printf("[CWordBase::Set_HashMap_Word_Tree]pNode=0x%08x.\n", pNode);
+	//printf("[CWordBase::Set_HashMap_Word_Tree]pNode->m_nPoolIndex=%d.\n", pNode->m_nPoolIndex);
 	if(NULL == pNode)
 	{
 		printf("[CWordBase::Set_HashMap_Word_Tree]node pool is empty.\n");
@@ -438,6 +438,15 @@ int CWordBase::Add_Word(const char* pWord)
 	_RuneLinkNode* pCurrTempNode = NULL;	
 
 	pCurrTempNode = m_pWordRoot;
+	
+	//查看当前词已经在词库里
+	vector<string> vecWord;
+	Cut(pWord, vecWord);
+	if(vecWord.size() == 1 && strcmp(vecWord[0].c_str(), pWord) == 0)
+	{
+		printf("[CWordBase::Add_Word]word is exist.\n");
+		return 0;
+	}
 	
 	int nLen = 0;
 	sprintf(szLine, "%s", pWord);

@@ -64,9 +64,7 @@ int main()
 		}
 	}
 	
-	/*
 	objWordBase.Add_Word("朋友");
-
 
   objvecWord.clear();
 
@@ -83,7 +81,6 @@ int main()
                   printf("%s\n", objvecWord[i].c_str());
           }
   }	
-  */
 	
 	/*
 	int u2PoolSize = 10000;
