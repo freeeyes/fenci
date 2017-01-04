@@ -120,10 +120,24 @@ public:
 		m_nCount  = nCount;
 		if(nInit == 0)
 		{
+			//第一次初始化
 			for(int i = 0; i < m_nCount; i++)
 			{
 				m_lpTable[i].Init();
 			}
+		}
+		else
+		{
+			//对正在使用的计数
+			int nUsed = 0;
+			for(int i = 0; i < m_nCount; i++)
+			{
+				if(m_lpTable[i].m_cExists == 1)
+				{
+					nUsed++;
+				}
+			}
+			m_nUsed = nUsed;
 		}
 	}
 	

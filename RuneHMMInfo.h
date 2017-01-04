@@ -23,10 +23,15 @@ struct _RuneHMMInfo
 	
 	_RuneHMMInfo()
 	{
+		Init();
+	}
+	
+	void Init()
+	{
 		memset(m_szRune, 0, 4);
 		m_dbProp  = 0;
 		m_nIndex  = 0;
-		m_cUsed   = 0;
+		m_cUsed   = 0;		
 	}
 	
 	void Set_Index(int nIndex)

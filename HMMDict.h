@@ -12,8 +12,8 @@ using namespace std;
 //HMM字典,以及HMM的实现
 //add by freeeyes
 
-#define HMM_DICT_POOL_SIZE 120000
-#define HMM_HASH_SIZE      30000
+#define HMM_DICT_POOL_SIZE 60000
+#define HMM_HASH_SIZE      15000
 
 class CHmmDict
 {
@@ -22,6 +22,7 @@ public:
 	~CHmmDict();
 	
 	bool Init(const char* pFile, char* pData);
+	bool Load(char* pData);
 	
 private:
 	bool Read_File_Line(ifstream& ifs, string& strLine);

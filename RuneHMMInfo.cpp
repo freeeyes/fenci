@@ -62,6 +62,7 @@ size_t CRuneHMMPool::Init(int nPoolCount, char* pData)
 	
 	for(int i = 0; i < nPoolCount; i++)
 	{
+		m_RuneHMMPoolList[i].Init();
 		m_RuneHMMPoolList[i].Set_Index(i);
 		//printf("[CRuneHMMPool::Init](0)nPos=%d.\n", nPos);
 	}
@@ -98,14 +99,14 @@ _RuneHMMInfo* CRuneHMMPool::Create()
 		return NULL;
 	}
 	
+	if(m_nCurrIndex >= m_nPoolCount - 1)
+	{
+		m_nCurrIndex = 0;
+	}	
+	
 	if(m_RuneHMMPoolList[m_nCurrIndex].m_cUsed == 0)
 	{
-		m_RuneHMMPoolList[m_nCurrIndex].m_cUsed = 1;
-		m_nCurrIndex++;
-		if(m_nCurrIndex == m_nPoolCount)
-		{
-			m_nCurrIndex = 0;
-		}
+		//printf("[CRuneHMMPool::Create]m_nCurrIndex=%d, nIndex=%d.\n", m_nCurrIndex, m_RuneHMMPoolList[m_nCurrIndex].Get_Index());
 		m_RuneHMMPoolList[m_nCurrIndex].m_cUsed = 1;
 		return &m_RuneHMMPoolList[m_nCurrIndex++];
 	}
@@ -126,6 +127,7 @@ _RuneHMMInfo* CRuneHMMPool::Create()
 			}
 		}
 		
+		printf("[CRuneHMMPool::Create]m_nCurrIndex=%d,m_nPoolCount=%d.\n", m_nCurrIndex, m_nPoolCount);
 		int nStart = 0;
 		//没找到，再重头开始找
 		for(int i = nStart; i < m_nCurrIndex - 1; i++)

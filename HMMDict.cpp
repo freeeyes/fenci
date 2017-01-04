@@ -49,8 +49,12 @@ bool CHmmDict::LoadHashProb(const string& strLine, CHashTable& hbProp)
     _RuneHMMInfo* pRuneHMMInfo = m_objRuneHMMPool.Create();
     if(NULL == pRuneHMMInfo)
     {
-      printf("[CHmmDict::LoadHashProb]pool is full.\n");
+      printf("[CHmmDict::LoadHashProb](%d)pool is full.\n", i);
       return false;    	
+    }
+    else
+    {
+    	//printf("[CHmmDict::LoadHashProb]Index=%d.\n", pRuneHMMInfo->Get_Index());
     }
     
     memcpy(pRuneHMMInfo->m_szRune, (char* )objRuneList[0].c_str(), objRuneList[0].length());
@@ -142,7 +146,7 @@ bool CHmmDict::Init(const char* pFile, char* pData)
 	if(true == Read_File_Line(ifs, strLine))
 	{
 		LoadHashProb(strLine, m_hashMapB);
-		printf("[CHmmDict::Init]m_hashMapB count=%d.\n", m_hashMapB.Get_Used_Count());
+		printf("[CHmmDict::Init]m_hashMapB count=%d OK.\n", m_hashMapB.Get_Used_Count());
 	}
 	else
 	{
@@ -154,7 +158,7 @@ bool CHmmDict::Init(const char* pFile, char* pData)
 	if(true == Read_File_Line(ifs, strLine))
 	{
 		LoadHashProb(strLine, m_hashMapE);
-		printf("[CHmmDict::Init]m_hashMapE count=%d.\n", m_hashMapE.Get_Used_Count());
+		printf("[CHmmDict::Init]m_hashMapE count=%d OK.\n", m_hashMapE.Get_Used_Count());
 	}
 	else
 	{
@@ -166,7 +170,7 @@ bool CHmmDict::Init(const char* pFile, char* pData)
 	if(true == Read_File_Line(ifs, strLine))
 	{
 		LoadHashProb(strLine, m_hashMapM);
-		printf("[CHmmDict::Init]m_hashMapM count=%d.\n", m_hashMapM.Get_Used_Count());
+		printf("[CHmmDict::Init]m_hashMapM count=%d OK.\n", m_hashMapM.Get_Used_Count());
 	}
 	else
 	{
@@ -178,13 +182,35 @@ bool CHmmDict::Init(const char* pFile, char* pData)
 	if(true == Read_File_Line(ifs, strLine))
 	{
 		LoadHashProb(strLine, m_hashMapS);
-		printf("[CHmmDict::Init]m_hashMapS count=%d.\n", m_hashMapS.Get_Used_Count());
+		printf("[CHmmDict::Init]m_hashMapS count=%d OK.\n", m_hashMapS.Get_Used_Count());
 	}
 	else
 	{
 		printf("[CHmmDict::Init]m_hashMapS read error.\n");
 		return false;		
 	}	
+	
+	return true;
+}
+
+bool CHmmDict::Load(char* pData)
+{
+	size_t stSize = 0;
+	stSize = m_objRuneHMMPool.Load(HMM_DICT_POOL_SIZE, pData);
+	pData += stSize;
+	m_hashMapB.Load(pData, HMM_HASH_SIZE, m_objRuneHMMPool.GetCryptTable());
+	pData += HMM_HASH_SIZE * sizeof(_Hash_Table_Cell);	
+	m_hashMapE.Load(pData, HMM_HASH_SIZE, m_objRuneHMMPool.GetCryptTable());
+	pData += HMM_HASH_SIZE * sizeof(_Hash_Table_Cell);	
+	m_hashMapM.Load(pData, HMM_HASH_SIZE, m_objRuneHMMPool.GetCryptTable());
+	pData += HMM_HASH_SIZE * sizeof(_Hash_Table_Cell);
+	m_hashMapS.Load(pData, HMM_HASH_SIZE, m_objRuneHMMPool.GetCryptTable());
+	pData += HMM_HASH_SIZE * sizeof(_Hash_Table_Cell);	
+	
+	printf("[CHmmDict::Load]m_hashMapB count=%d OK.\n", m_hashMapB.Get_Used_Count());
+	printf("[CHmmDict::Load]m_hashMapB count=%d OK.\n", m_hashMapE.Get_Used_Count());
+	printf("[CHmmDict::Load]m_hashMapB count=%d OK.\n", m_hashMapM.Get_Used_Count());
+	printf("[CHmmDict::Load]m_hashMapB count=%d OK.\n", m_hashMapS.Get_Used_Count());
 	
 	return true;
 }

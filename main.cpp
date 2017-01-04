@@ -75,14 +75,37 @@ int main()
     }
   }	
   */
+  
+  //测试HMM加载
+  CHmmDict objHmmDict;
   size_t stPoolSize = HMM_DICT_POOL_SIZE * sizeof(_RuneHMMInfo) + HMM_HASH_SIZE * sizeof(_Hash_Table_Cell) * 4;
   stPoolSize += 1280;
-  char* pData = new char[stPoolSize];
+ 
+	shm_key obj_key = 30001;
+	shm_id obj_shm_id;
+	bool blCreate = true;
+	char* pData = Open_Share_Memory_API(obj_key, stPoolSize, obj_shm_id, blCreate);
+	  
+  //char* pData = new char[stPoolSize];
   printf("[HMM]size=%d.\n", (int)stPoolSize);
   
-  CHmmDict objHmmDict;
-  objHmmDict.Init("hmm_model.utf8", pData);
-  delete[] pData;
+  if(NULL != pData)
+	{
+		if(blCreate == true)
+		{
+  		objHmmDict.Init("hmm_model.utf8", pData);
+		}  
+  	else
+  	{
+  		objHmmDict.Load(pData);
+  	}
+  }
+  else
+  {
+  	printf("[HMM]Create memory fail.\n");
+  }
+  
+  //delete[] pData;
 		
 	return 0;
 }
