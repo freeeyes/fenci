@@ -1,9 +1,11 @@
 #include "wordbase.h"
+#include "HMMDict.h"
 #include "ShareMemory.h"
 
 //g++ -o Test runepool.cpp nodepool.cpp wordbase.cpp main.cpp
 int main()
 {
+	/*
 	CWordBase objWordBase;
 	
 	int nPoolSize = 100;
@@ -38,15 +40,6 @@ int main()
 	}
 	
 	vector<string> objvecWord;
-	/*
-	objWordBase.Cut_Word("哪里见过你呀,朋友", objvecWord);
-	
-	printf("[Cut_Word]Word size=%d.\n", objvecWord.size());
-	for(int i = 0; i < objvecWord.size(); i++)
-	{
-		printf("[Cut_Word]Word=%s.\n", objvecWord[i].c_str());
-	}
-	*/
 	
 	objvecWord.clear();
 	
@@ -72,73 +65,24 @@ int main()
   printf("[Cut]");
   for(int i = 0; i < objvecWord.size(); i++)
   {
-          if(i != objvecWord.size() - 1)
-          {
-                  printf("%s/", objvecWord[i].c_str());
-          }
-          else
-          {
-                  printf("%s\n", objvecWord[i].c_str());
-          }
+    if(i != objvecWord.size() - 1)
+    {
+    	printf("%s/", objvecWord[i].c_str());
+    }
+    else
+    {
+    	printf("%s\n", objvecWord[i].c_str());
+    }
   }	
-	
-	/*
-	int u2PoolSize = 10000;
-	CHashTable<int> objHashTable;
-	
-	printf("[Main]1 Size=%d.\n", sizeof(objHashTable));
-	
-	size_t nArraySize = sizeof(_Hash_Table_Cell<int>) * u2PoolSize;
-	char* pHashBase = new char[nArraySize];
-	
-	objHashTable.Init(pHashBase, u2PoolSize, NULL);
-	
-	printf("[Main]2 Size=%d nArraySize=%d.\n", sizeof(objHashTable), nArraySize);
-	
-	int a = 1;
-	int b = 2;
-	int c = 3;
-	int d = 4;
-	
-	printf("[main]a=08%08x, b=0x%08x, c=0x%08x.\n", &a, &b, &c);
-	
-	int nPos = 0;
-	nPos = objHashTable.Add_Hash_Data("1", &a);
-	printf("[Main]1 Pos=%d.\n", nPos);
-	nPos = objHashTable.Add_Hash_Data("2", &b);
-	printf("[Main]2 Pos=%d.\n", nPos);
-	nPos = objHashTable.Add_Hash_Data("3", &c);
-	printf("[Main]3 Pos=%d.\n", nPos);
-	
-	int* pT = objHashTable.Get_Hash_Box_Data("3");
-	printf("[Main]key=3, value=%d,Addr=0x%08x.\n", *pT, pT);
-	pT = objHashTable.Get_Hash_Box_Data("2");
-	printf("[Main]key=2, value=%d,Addr=0x%08x.\n", *pT, pT);
-	pT = objHashTable.Get_Hash_Box_Data("1");
-	printf("[Main]key=1, value=%d,Addr=0x%08x.\n", *pT, pT);
-	
-	objHashTable.Del_Hash_Data("2");
-	objHashTable.Add_Hash_Data("4", &d);
-	pT = objHashTable.Get_Hash_Box_Data("4");
-	printf("[Main]key=4, value=%d,Addr=0x%08x.\n", *pT, pT);	
-	*/
-	
-	/*
-	int nPoolSize = 1000;
-	size_t stPoolSize = 1280 + sizeof(_RuneLinkNode)*nPoolSize 
-								+ sizeof(_Hash_Table_Cell<_RuneLinkNode>) * MAIN_DICT_MAP_COUNT
-								+ (sizeof(_Hash_Table_Cell<_RuneLinkNode>) * CHILD_DICT_MAP_COUNT) * (nPoolSize - 1);
-	
-	printf("[Main]stPoolSize=%d.\n", stPoolSize);
-	char* pData = new char[stPoolSize];
-	memset(pData, 0, stPoolSize);
-	
-	CNodePool objNodePool;
-	size_t nSize = objNodePool.Init(nPoolSize, pData);
-	printf("[Main]curr stPoolSize=%d.\n", nSize);
-	
-	delete[] pData;
-	*/
+  */
+  size_t stPoolSize = HMM_DICT_POOL_SIZE * sizeof(_RuneHMMInfo) + HMM_HASH_SIZE * sizeof(_Hash_Table_Cell) * 4;
+  stPoolSize += 1280;
+  char* pData = new char[stPoolSize];
+  printf("[HMM]size=%d.\n", (int)stPoolSize);
+  
+  CHmmDict objHmmDict;
+  objHmmDict.Init("hmm_model.utf8", pData);
+  delete[] pData;
 		
 	return 0;
 }

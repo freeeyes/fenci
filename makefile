@@ -2,9 +2,9 @@ include makefile.define
 
 default:all
 
-PATS = runepool.o nodepool.o wordbase.o ShareMemory.o main.o
+PATS = nodepool.o wordbase.o RuneHMMInfo.o HMMDict.o ShareMemory.o main.o
 
-LIB_BASE_OBJS = runepool.o nodepool.o wordbase.o ShareMemory.o main.o
+LIB_BASE_OBJS = nodepool.o wordbase.o RuneHMMInfo.o HMMDict.o  ShareMemory.o main.o
 
 LIB_BASE = fenci
 

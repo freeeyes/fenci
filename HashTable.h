@@ -14,12 +14,12 @@ enum EM_HASH_STATE
 //hash表结构
 struct _Hash_Table_Cell 
 {
-	char  m_cExists;                       //当前块是否已经使用,1已经使用，0没有被使用
-	int   m_nNextKeyIndex;                 //链表信息，如果主键有冲突,记录下一个冲突主键的位置
-	int   m_nProvKeyIndex;                 //链表信息，如果主键有冲突,记录上一个冲突主键的位置
-	unsigned long m_uHashA;                //第二次的hashkey值
-	unsigned long m_uHashB;                //第三次的hashkey值 
-	int     m_nValue;                      //当前数据体
+	char      m_cExists;                       //当前块是否已经使用,1已经使用，0没有被使用
+	short     m_nNextKeyIndex;                 //链表信息，如果主键有冲突,记录下一个冲突主键的位置
+	short     m_nProvKeyIndex;                 //链表信息，如果主键有冲突,记录上一个冲突主键的位置
+	unsigned long m_uHashA;                    //第二次的hashkey值
+	unsigned long m_uHashB;                    //第三次的hashkey值 
+	int       m_nValue;                        //当前数据体
 	
 	_Hash_Table_Cell()
 	{
@@ -107,7 +107,7 @@ public:
 	{
 		if(NULL != m_lpTable)
 		{
-			delete[] m_lpTable;
+			//delete[] m_lpTable;
 			m_lpTable = NULL;
 		}
 		m_nCount = 0;

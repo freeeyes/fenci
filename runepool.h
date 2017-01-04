@@ -115,38 +115,4 @@ struct _Rune
 	}	
 };
 
-class CRunePool
-{
-public:
-	CRunePool();
-	~CRunePool();
-	
-	void Init(int nPoolCount);
-	void Close();
-	
-	_Rune* Create();
-	bool   Delete(_Rune* pRune);
-	
-	size_t Create_Offset();
-	bool Delete_Offset(size_t stRune);
-	_Rune* Get_Offset(size_t stRune);
-	
-private:
-	struct _Rune_Box
-	{
-		char  m_cUsed;   //0为未使用，1为使用
-		_Rune m_objRune; 
-		
-		_Rune_Box()
-		{
-			m_cUsed = 0;
-		}  
-	};
-	
-private:
-	int            m_nPoolCount;
-	int            m_nCurrIndex;
-	_Rune_Box*     m_RunePoolList;
-};
-
 #endif

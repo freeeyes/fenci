@@ -177,7 +177,7 @@ _RuneLinkNode* CNodePool::Create(int nLayer)
 		{
 			if(m_NodePoolList[i].m_cUsed == 0)
 			{
-				m_nCurrIndex = i++;
+				m_nCurrIndex = i + 1;
 				if(m_nCurrIndex == m_nPoolCount)
 				{
 					m_nCurrIndex = 1;
@@ -197,11 +197,7 @@ _RuneLinkNode* CNodePool::Create(int nLayer)
 		{
 			if(m_NodePoolList[i].m_cUsed == 0)
 			{
-				m_nCurrIndex = i++;
-				if(m_nCurrIndex == m_nPoolCount)
-				{
-					m_nCurrIndex = 1;
-				}
+				m_nCurrIndex = i + 1;
 				m_NodePoolList[i].m_cUsed = 1;
 				return &m_NodePoolList[i];				
 			}			
