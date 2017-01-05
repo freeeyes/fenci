@@ -7,6 +7,9 @@
 
 using namespace std;
 
+const double MIN_DOUBLE = -3.14e+100;
+const double MAX_DOUBLE = 3.14e+100;
+
 inline void Split(const string& src, vector<string>& res, const string& pattern, size_t maxsplit = string::npos) {
   res.clear();
   size_t Start = 0;

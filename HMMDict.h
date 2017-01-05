@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "HashTable.h"
 #include "RuneHMMInfo.h"
+#include "runepool.h"
 #include <string>
 
 using namespace std;
@@ -24,9 +25,15 @@ public:
 	bool Init(const char* pFile, char* pData);
 	bool Load(char* pData);
 	
+	void Cut(const char* pData, int nLen, vector<string>& objWordList);
+	
 private:
 	bool Read_File_Line(ifstream& ifs, string& strLine);
 	bool LoadHashProb(const string& strLine, CHashTable& hbProp);
+	
+	void Viterbi(const char* pData, int nLen, vector<short>& objResList);
+	void Sentance_To_Rune(const char* pData, int nLen, vector<_Rune>& objRuneList);
+	double Get_Rune_Prop(_Rune objRune, CHashTable& objhashMap);
 	
 private:
 	CRuneHMMPool m_objRuneHMMPool;

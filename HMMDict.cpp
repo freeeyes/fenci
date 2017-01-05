@@ -215,3 +215,164 @@ bool CHmmDict::Load(char* pData)
 	return true;
 }
 
+void CHmmDict::Sentance_To_Rune(const char* pData, int nLen, vector<_Rune>& objRuneList)
+{
+	_Rune objRune;
+	for(int i = 0; i < nLen;)
+	{
+		ENUM_WORD_TYPE emType = Get_Rune_From_String(pData, i, nLen, &objRune);
+		if(emType != WORD_TYPE_UNKNOW)
+		{
+			i = i + objRune.m_nRuneLen;
+			objRuneList.push_back(objRune);
+		}
+		else
+		{
+			printf("[CWordBase::Cut]<ERROR WORD TYPE>");
+			break;
+		}		
+	}	
+}
+
+double CHmmDict::Get_Rune_Prop(_Rune objRune, CHashTable& objhashMap)
+{
+	double dbRuneProb = MIN_DOUBLE;
+	int nOffset = objhashMap.Get_Hash_Box_Data((const char* )objRune.m_szRune);
+	//printf("[CHmmDict::Get_Rune_Prop]nOffset=%d.\n", nOffset);
+	_RuneHMMInfo* pRuneHMMInfo = m_objRuneHMMPool.Get_NodeOffset_Ptr(nOffset);
+	if(NULL != pRuneHMMInfo)
+	{
+		dbRuneProb = pRuneHMMInfo->m_dbProp;
+	}
+	
+	//printf("[CHmmDict::Get_Rune_Prop]dbRuneProb=%f.\n", dbRuneProb);
+	return dbRuneProb;
+}
+
+void CHmmDict::Viterbi(const char* pData, int nLen, vector<short>& objResList)
+{
+	//首先把句子拆成一个个字
+	vector<_Rune> objRuneList;
+	Sentance_To_Rune(pData, nLen, objRuneList);
+	printf("[CHmmDict::Viterbi]objRuneList Count=%d.\n", objRuneList.size());
+	
+	int nRowCount    = (int)objRuneList.size();
+	int nColCount    = (int)RUNE_POS_ALL;
+	int nMatrixCount = nRowCount * nColCount;
+	
+	//马尔科夫模型
+	//组建显式矩阵(字权重矩阵)
+	vector<double> objWeightMatrix(nMatrixCount);
+	
+	//组建隐式矩阵(字状态矩阵)
+	vector<short> objStatusMatrix(nMatrixCount);
+	
+	//显式矩阵第一行，第一个字初始状态的概率，对应BEMS
+	//第一个字的概率为 初始概率 + 字的初始概率
+  for (int nCol = 0; nCol < nColCount; nCol++) 
+  {
+  	if(nCol == RUNE_POS_B)
+  	{
+    	objWeightMatrix[0 + nCol * nRowCount] = m_dbStart[nCol] + Get_Rune_Prop(objRuneList[0], m_hashMapB);
+    	objStatusMatrix[0 + nCol * nRowCount] = -1;
+    }
+    else if(nCol == RUNE_POS_E)
+    {
+    	objWeightMatrix[0 + nCol * nRowCount] = m_dbStart[nCol] + Get_Rune_Prop(objRuneList[0], m_hashMapE);
+    	objStatusMatrix[0 + nCol * nRowCount] = -1;    	
+    }
+    else if(nCol == RUNE_POS_M)
+    {
+    	objWeightMatrix[0 + nCol * nRowCount] = m_dbStart[nCol] + Get_Rune_Prop(objRuneList[0], m_hashMapM);
+    	objStatusMatrix[0 + nCol * nRowCount] = -1;    	
+    }
+    else
+    {
+    	objWeightMatrix[0 + nCol * nRowCount] = m_dbStart[nCol] + Get_Rune_Prop(objRuneList[0], m_hashMapS);
+    	objStatusMatrix[0 + nCol * nRowCount] = -1;    	
+    }            
+  }	
+	
+	//填充矩阵的其余部分(按字的顺序)
+	for(int nRow = 1; nRow < nRowCount; nRow++)
+	{
+		for (int nCol = 0; nCol < nColCount; nCol++) 
+		{
+			int nCurrPos = nRow + nCol*nRowCount;
+			objWeightMatrix[nCurrPos] = MIN_DOUBLE;
+			objStatusMatrix[nCurrPos] = RUNE_POS_E;
+			double dbCurrProp = MIN_DOUBLE;
+			if(nCol == RUNE_POS_B)
+			{
+				dbCurrProp = Get_Rune_Prop(objRuneList[nRow], m_hashMapB);
+			}
+			else if(nCol == RUNE_POS_E)
+			{
+				dbCurrProp = Get_Rune_Prop(objRuneList[nRow], m_hashMapE);
+			}
+			else if(nCol == RUNE_POS_M)
+			{
+				dbCurrProp = Get_Rune_Prop(objRuneList[nRow], m_hashMapM);
+			}
+			else
+			{
+				dbCurrProp = Get_Rune_Prop(objRuneList[nRow], m_hashMapS);
+			}
+			
+			//寻找和上一个字的对应关系，取概率最高的关系作为当前概率(算法核心)
+			for (int nPreCol = 0; nPreCol < nColCount; nPreCol++)
+			{
+				int nOldPos = nRow - 1 + nPreCol * nRowCount;
+				double dbTemp = objWeightMatrix[nOldPos] + m_dbTransProb[nOldPos][nCol] + dbCurrProp;
+				if (dbTemp > objWeightMatrix[nCurrPos]) 
+				{
+					objWeightMatrix[nCurrPos] = dbTemp;
+					objStatusMatrix[nCurrPos] = nPreCol;
+				}
+			}
+		}
+	}
+	
+	//获得最后末尾的S和E，因为末尾的字只可能是这两个状态之一
+	double dbEndE = objWeightMatrix[nRowCount - 1 + RUNE_POS_E*nRowCount];
+	double dbEndS = objWeightMatrix[nRowCount - 1 + RUNE_POS_S*nRowCount];
+	short sStatus = RUNE_POS_E;
+	if(dbEndE < dbEndS)
+	{
+		sStatus = RUNE_POS_S;
+	}
+	
+	objResList.resize(nRowCount);
+	for(int i = nRowCount - 1; i >= 0; i--)
+	{
+		objResList[i] = sStatus;
+		sStatus       = objStatusMatrix[i + sStatus*nRowCount];
+	}
+	
+	for(int i = 0; i < nRowCount; i++)
+	{
+		if(objResList[i] == RUNE_POS_B)
+		{
+			printf("B");
+		}
+		else if(objResList[i] == RUNE_POS_E)
+		{
+			printf("E");
+		}
+		else if(objResList[i] == RUNE_POS_M)
+		{
+			printf("M");
+		}
+		else
+		{
+			printf("S");
+		}		
+	}
+	printf("\n");
+}
+
+void CHmmDict::Cut(const char* pData, int nLen, vector<string>& objWordList)
+{
+	vector<short> objResList;
+	Viterbi(pData, nLen, objResList);
+}

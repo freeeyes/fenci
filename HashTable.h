@@ -343,7 +343,7 @@ private:
 					printf("[GetLastClashKey][%d](%s).\n", 
 												nStartIndex, m_lpTable[nStartIndex].m_szKey);
 					*/
-					printf("[GetLastClashKey]Search Count=%d.\n", nRunCount);			
+					//printf("[GetLastClashKey]Search Count=%d.\n", nRunCount);			
 					return nStartIndex;
 				}			
 				
@@ -408,7 +408,7 @@ private:
 				if(uHashA == m_lpTable[nStartIndex].m_uHashA && uHashB == m_lpTable[nStartIndex].m_uHashB)
 				{
 					//找到了匹配的对象，返回之
-					printf("[GetLastClashKey]Search Count=%d.\n", nRunCount);				
+					//printf("[GetLastClashKey]Search Count=%d.\n", nRunCount);				
 					return nStartIndex;
 				}
 				

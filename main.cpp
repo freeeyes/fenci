@@ -43,7 +43,7 @@ int main()
 	
 	objvecWord.clear();
 	
-	objWordBase.Cut("09azAZ哪里见过你呀,朋友", objvecWord);
+	objWordBase.Cut("哪里见过你呀,朋友", objvecWord);
 	printf("[Cut]");
 	for(int i = 0; i < objvecWord.size(); i++)
 	{
@@ -105,6 +105,13 @@ int main()
   	printf("[HMM]Create memory fail.\n");
   }
   
+  //测试切分句子
+  char szTestSentence[100]  = {'\0'};
+  sprintf(szTestSentence, "哪里见过你呀,朋友");
+  int nLen = strlen(szTestSentence);
+  
+  vector<string> objWordList;
+  objHmmDict.Cut(szTestSentence, nLen, objWordList);
   //delete[] pData;
 		
 	return 0;

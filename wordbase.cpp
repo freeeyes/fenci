@@ -204,52 +204,6 @@ _RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune*
 	return pNode;
 }
 
-ENUM_WORD_TYPE CWordBase::Get_Rune_From_String(const char* pWord, int nBegin, int nLen, _Rune* pRune)
-{
-	unsigned char cBegin = (unsigned char)pWord[nBegin];
-	//printf("******0x%02x******\n", cBegin);
-	if(cBegin < 0x80)
-	{
-		//当前是ascii字符集
-		pRune->m_szRune[0] = (unsigned char)pWord[nBegin];
-		pRune->m_nRuneLen  = 1;
-		pRune->m_emType    = WORD_TYPE_ASCII;
-		pRune->Set_Number();
-		return pRune->m_emType;
-	}
-	else
-	{
-		//比较字符高4位
-		char szTemp = cBegin >> 4;
-		if(szTemp == 0xe && nLen - nBegin >= 3)
-		{
-			//为三字节utf8格式
-			pRune->m_szRune[0] = (unsigned char)pWord[nBegin];
-			pRune->m_szRune[1] = (unsigned char)pWord[nBegin + 1];
-			pRune->m_szRune[2] = (unsigned char)pWord[nBegin + 2];
-			pRune->m_nRuneLen = 3;
-			pRune->m_emType   = WORD_TYPE_UTF8;
-			pRune->Set_Number();
-			return pRune->m_emType;
-		}
-		//else if(((char)(szTemp & 0xc) == 0xc) && (nLen - nBegin >= 2))
-		else if(nLen - nBegin >= 2)
-		{
-			//为gbk编码
-			pRune->m_szRune[0] = (unsigned char)pWord[nBegin];
-			pRune->m_szRune[1] = (unsigned char)pWord[nBegin + 1];
-			pRune->m_nRuneLen = 2;
-			pRune->m_emType   = WORD_TYPE_GBK;
-			pRune->Set_Number();
-			return pRune->m_emType;
-		}
-		else
-		{
-			return pRune->m_emType;
-		}
-	}
-}
-
 _RuneLinkNode* CWordBase::Find(_Rune* pRune, _RuneLinkNode* pRuneLinkNode)
 {
 	if(pRuneLinkNode->m_hmapRuneNextMap.Get_Used_Count() == 0)
