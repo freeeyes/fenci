@@ -346,10 +346,6 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 			for (int nPreCol = 0; nPreCol < nColCount; nPreCol++)
 			{
 				int nOldPos = nRow - 1 + nPreCol * nRowCount;
-				//if(nCurrPos == 10)
-				//{
-				//	printf("[%d]m_dbTransProb[nPreCol][nCol]=%f.\n", nPreCol, m_dbTransProb[nPreCol][nCol]);
-				//}
 				double dbTemp = objWeightMatrix[nOldPos] + m_dbTransProb[nCol + nPreCol*nColCount] + dbCurrProb;
 				if (dbTemp > objWeightMatrix[nCurrPos]) 
 				{
@@ -361,6 +357,7 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 	}
 	
 	//打印隐式矩阵
+	/*
 	printf("=============(Status Matrix)=================\n");
 	for(int nRow = 0; nRow < nRowCount; nRow++)
 	{
@@ -372,6 +369,7 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 		printf("\n");
 	}
 	printf("=============(Status Matrix)=================\n");
+	*/
 	//获得最后末尾的S和E，因为末尾的字只可能是这两个状态之一
 	double dbEndE = objWeightMatrix[nRowCount - 1 + RUNE_POS_E*nRowCount];
 	double dbEndS = objWeightMatrix[nRowCount - 1 + RUNE_POS_S*nRowCount];
@@ -388,6 +386,7 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 		sStat       = objStatusMatrix[i + sStat*nRowCount];
 	}
 	
+	/*
 	for(int i = 0; i < nRowCount; i++)
 	{
 		if(objResList[i] == RUNE_POS_B)
@@ -408,8 +407,7 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 		}		
 	}
 	printf("\n");
-	
-	
+	*/
 }
 
 void CHmmDict::Cut(const char* pData, int nLen, vector<string>& objWordList)
