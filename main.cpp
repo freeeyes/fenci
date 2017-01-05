@@ -78,8 +78,7 @@ int main()
   
   //测试HMM加载
   CHmmDict objHmmDict;
-  size_t stPoolSize = HMM_DICT_POOL_SIZE * sizeof(_RuneHMMInfo) + HMM_HASH_SIZE * sizeof(_Hash_Table_Cell) * 4;
-  stPoolSize += 1280;
+  size_t stPoolSize = objHmmDict.Get_Mem_Size();
  
 	shm_key obj_key = 30001;
 	shm_id obj_shm_id;
@@ -107,12 +106,23 @@ int main()
   
   //测试切分句子
   char szTestSentence[100]  = {'\0'};
-  sprintf(szTestSentence, "哪里见过你呀,朋友");
+  sprintf(szTestSentence, "哪里见过你朋友");
   int nLen = strlen(szTestSentence);
   
   vector<string> objWordList;
   objHmmDict.Cut(szTestSentence, nLen, objWordList);
-  //delete[] pData;
-		
+  for(int i = 0; i < objWordList.size(); i++)
+  {
+    if(i != objWordList.size() - 1)
+    {
+    	printf("%s/", objWordList[i].c_str());
+    }
+    else
+    {
+    	printf("%s/\n", objWordList[i].c_str());
+    }
+  }	  
+  
+ 	//delete[] pData;		
 	return 0;
 }

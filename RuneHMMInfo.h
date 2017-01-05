@@ -19,7 +19,7 @@ struct _RuneHMMInfo
 	char   m_cUsed;    //0为未使用，1为使用
 	int    m_nIndex;   //内存池的位置
 	char   m_szRune[4];
-	double m_dbProp;
+	double m_dbProb;
 	
 	_RuneHMMInfo()
 	{
@@ -29,7 +29,7 @@ struct _RuneHMMInfo
 	void Init()
 	{
 		memset(m_szRune, 0, 4);
-		m_dbProp  = 0;
+		m_dbProb  = 0;
 		m_nIndex  = 0;
 		m_cUsed   = 0;		
 	}
