@@ -237,6 +237,13 @@ public:
 			return -1;
 		}
 		
+		//查找是否已经存在
+		int nOffSet = Get_Hash_Box_Data(pKey);
+		if(nOffSet > 0)
+		{
+			return 0;
+		}
+		
 		int nPos = GetHashTablePos(pKey, EM_INSERT);
 		if(-1 == nPos)
 		{

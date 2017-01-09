@@ -1,18 +1,42 @@
 #include "wordbase.h"
 #include "HMMDict.h"
+#include "WordDict.h"
 #include "ShareMemory.h"
 
 //g++ -o Test runepool.cpp nodepool.cpp wordbase.cpp main.cpp
 int main()
 {
+	//测试词典前置词加载方式
+	CWordDict objWordDict;
+	int nPoolSize = 1000000;
+	shm_key obj_key = 30001;
+	shm_id obj_shm_id;
+	bool blCreate = true;	
+	
+	size_t stDict = objWordDict.Get_Mem_Size(nPoolSize);
+	printf("[Main]stDict=%d.\n", stDict);
+	//char* pData = Open_Share_Memory_API(obj_key, stDict, obj_shm_id, blCreate);
+	
+	char* pData = new char[stDict];
+	memset(pData, 0, stDict);
+	if(NULL != pData)
+	{
+		if(blCreate == true)
+		{	
+			objWordDict.Init("worddict.txt", pData);
+		}
+		else
+		{
+			objWordDict.Load(pData);
+		}
+	}
+	
 	/*
+	//Tire树
 	CWordBase objWordBase;
 	
-	int nPoolSize = 100;
-	size_t stPoolSize = 1280 + sizeof(int) + sizeof(_RuneLinkNode)*nPoolSize 
-								+ sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT + sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT * MAIN_DICT_MAP_COUNT
-								+ (sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT) * (nPoolSize - MAIN_DICT_MAP_COUNT - 1);	
-	
+	int nPoolSize = 100000;
+	size_t stPoolSize = objWordBase.Get_Mem_Size(nPoolSize);
 	
 	printf("[Main]stPoolSize=%d.\n", stPoolSize);
 	
@@ -21,8 +45,8 @@ int main()
 	shm_key obj_key = 30001;
 	shm_id obj_shm_id;
 	bool blCreate = true;
-	char* pData = Open_Share_Memory_API(obj_key, stPoolSize, obj_shm_id, blCreate);
-	//char* pData  = new char[stPoolSize];
+	//char* pData = Open_Share_Memory_API(obj_key, stPoolSize, obj_shm_id, blCreate);
+	char* pData  = new char[stPoolSize];
 	if(NULL != pData)
 	{
 		if(blCreate == true)
@@ -76,6 +100,7 @@ int main()
   }	
   */
   
+  /*
   //测试HMM加载
   CHmmDict objHmmDict;
   size_t stPoolSize = objHmmDict.Get_Mem_Size();
@@ -121,7 +146,8 @@ int main()
     {
     	printf("%s/\n", objWordList[i].c_str());
     }
-  }	  
+  }	
+  */  
   
  	//delete[] pData;		
 	return 0;

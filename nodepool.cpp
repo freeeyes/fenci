@@ -156,18 +156,18 @@ _RuneLinkNode* CNodePool::Create(int nLayer)
 	if(nLayer > 2)
 	{
 		//大于2层的，以10个节点为准
-		m_nCurrIndex += MAIN_DICT_MAP_COUNT + 1;
+		m_nCurrIndex += MAIN_DICT_MAP_COUNT;
 	}
+	
+	//printf("[CNodePool::Create]nLayer=%d,m_nCurrIndex=%d.\n", nLayer, m_nCurrIndex);
 	
 	if(m_NodePoolList[m_nCurrIndex].m_cUsed == 0)
 	{
 		m_NodePoolList[m_nCurrIndex].m_cUsed = 1;
-		m_nCurrIndex++;
-		if(m_nCurrIndex == m_nPoolCount)
+		if(m_nCurrIndex + 1 >= m_nPoolCount)
 		{
 			m_nCurrIndex = 1;
 		}
-		m_NodePoolList[m_nCurrIndex].m_cUsed = 1;
 		return &m_NodePoolList[m_nCurrIndex++];
 	}
 	else

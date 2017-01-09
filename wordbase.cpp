@@ -11,6 +11,15 @@ CWordBase::~CWordBase()
 	Close();
 }
 
+size_t CWordBase::Get_Mem_Size(int nPoolSize)
+{
+	size_t stPoolSize = 1280 + sizeof(int) + sizeof(_RuneLinkNode)*nPoolSize 
+									+ sizeof(_Hash_Table_Cell) * MAIN_DICT_MAP_COUNT + sizeof(_Hash_Table_Cell) * CHILD_DICT_MAP_COUNT * MAIN_DICT_MAP_COUNT
+									+ (sizeof(_Hash_Table_Cell) * END_DICT_MAP_COUNT) * (nPoolSize - MAIN_DICT_MAP_COUNT - 1);
+									
+	return stPoolSize;
+}
+
 bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 {
 	string strLine;
@@ -55,6 +64,8 @@ bool CWordBase::Init(const char* pDictFile, int nPoolSize, char* pData)
 		}
 		
 		_Rune objRune;
+		
+		//printf("[Init]szLine=%s.\n", szLine);
 		
 		int nLayer = 0;	
 		for(int i = 0; i < nLen - 1;)
@@ -171,6 +182,7 @@ void CWordBase::Close()
 
 _RuneLinkNode* CWordBase::Set_HashMap_Word_Tree(_RuneLinkNode* pRuneNode, _Rune* pRune, int nLayer)
 {
+	//printf("[CWordBase::Set_HashMap_Word_Tree]pRuneNode=%d.\n", pRuneNode->m_nPoolIndex);
 	int nOfficeSet = pRuneNode->m_hmapRuneNextMap.Get_Hash_Box_Data((char* )pRune->m_szRune);
 	if(nOfficeSet > 0)
 	{

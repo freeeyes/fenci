@@ -37,7 +37,7 @@ void CRuneHMMPool::prepareCryptTable()
 void CRuneHMMPool::Close()
 {
 	m_pCryptTable  = NULL;
-	m_pBase        = NULL;	
+	m_pBase        = NULL;
 }
 
 char* CRuneHMMPool::GetCryptTable()

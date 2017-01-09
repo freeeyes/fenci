@@ -13,8 +13,8 @@ using namespace std;
 #define MAX_WORD_LENGTH 30
 
 //节点类型不同的定义
-#define MAIN_DICT_MAP_COUNT  10
-#define CHILD_DICT_MAP_COUNT 5
+#define MAIN_DICT_MAP_COUNT  10000
+#define CHILD_DICT_MAP_COUNT 50
 #define END_DICT_MAP_COUNT   5
 
 //永久节点模型

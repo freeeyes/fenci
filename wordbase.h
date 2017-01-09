@@ -13,6 +13,7 @@ public:
 	CWordBase();
 	~CWordBase(); 
 	
+	size_t Get_Mem_Size(int nPoolSize);
 	bool Init(const char* pDictFile, int nPoolSize, char* pData);
 	bool Load(int nPoolSize, char* pData);
 	void Close();

@@ -112,6 +112,7 @@ bool CHmmDict::Init(const char* pFile, char* pData)
 	//得到所有文字的初始化的BEMS概率表
 	if(true == Read_File_Line(ifs, strLine))
 	{
+		 objTempAttrList.clear();
 		 Split(strLine, objTempAttrList, " ");
 		 if(objTempAttrList.size() != RUNE_POS_ALL)
 		 {
