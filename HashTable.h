@@ -15,8 +15,8 @@ enum EM_HASH_STATE
 struct _Hash_Table_Cell 
 {
 	char      m_cExists;                       //当前块是否已经使用,1已经使用，0没有被使用
-	short     m_nNextKeyIndex;                 //链表信息，如果主键有冲突,记录下一个冲突主键的位置
-	short     m_nProvKeyIndex;                 //链表信息，如果主键有冲突,记录上一个冲突主键的位置
+	int       m_nNextKeyIndex;                 //链表信息，如果主键有冲突,记录下一个冲突主键的位置
+	int       m_nProvKeyIndex;                 //链表信息，如果主键有冲突,记录上一个冲突主键的位置
 	unsigned long m_uHashA;                    //第二次的hashkey值
 	unsigned long m_uHashB;                    //第三次的hashkey值 
 	int       m_nValue;                        //当前数据体
@@ -116,6 +116,7 @@ public:
 	//设置一个已知的内存数组块(必须初始化调用),nInit是0重新初始化，1是不需要重新初始化
 	void Set_Base_Addr(char* pData, int nCount, int nInit)
 	{
+		//printf("[A]nCount=%d.\n", nCount);
 		m_lpTable = (_Hash_Table_Cell* )pData;
 		m_nCount  = nCount;
 		if(nInit == 0)
@@ -128,16 +129,16 @@ public:
 		}
 		else
 		{
+			//printf("[A]LOAD=%d.\n", nCount);
 			//对正在使用的计数
 			int nUsed = 0;
 			for(int i = 0; i < m_nCount; i++)
 			{
 				if(m_lpTable[i].m_cExists == 1)
 				{
-					nUsed++;
+					m_nUsed++;
 				}
 			}
-			m_nUsed = nUsed;
 		}
 	}
 	
@@ -264,14 +265,14 @@ public:
 		if(NULL == m_lpTable)
 		{
 			//没有找到共享内存
-			return 0;
+			return -1;
 		}	
 		
 		int nPos = GetHashTablePos(pKey, EM_SELECT);
 		if(-1 == nPos)
 		{
 			//没有找到
-			return 0;
+			return -1;
 		}
 		else
 		{
@@ -328,6 +329,7 @@ private:
 	//在已知的冲突链表中寻找最后一个
 	int GetLastClashKey(int nStartIndex, const char *lpszString, unsigned long uHashA, unsigned long uHashB, EM_HASH_STATE emHashState)
 	{
+		int nCurrIndex = nStartIndex;
 		int nMaxIndex = m_nCount;
 		int nRunCount = 0;
 		
@@ -336,12 +338,14 @@ private:
 		{
 			if(nRunCount > nMaxIndex - 1)
 			{
+				printf("[GetLastClashKey]1 nCurrIndex=%d, nStartIndex=%d.\n", nCurrIndex, nStartIndex);
+				printf("[GetLastClashKey]Get_Used_Count=%d,Count=%d.\n", Get_Used_Count(), Get_Count());
 				return -1;
 			}
 			
 			//printf("[GetLastClashKey](%s) curr(%d) next(%d)-->.\n", lpszString, nStartIndex, m_lpTable[nStartIndex].m_nNextKeyIndex);
 			if(m_lpTable[nStartIndex].m_nNextKeyIndex == -1)
-			{
+			{				
 				//判断当前是否是当前数据
 				if(uHashA == m_lpTable[nStartIndex].m_uHashA && uHashB == m_lpTable[nStartIndex].m_uHashB)
 				{
@@ -392,12 +396,13 @@ private:
 							return i;
 						}							
 					}
+					printf("[GetLastClashKey]2 nStartIndex=%d.\n");
 				}
 				
 				return -1;
 			}
 			else
-			{
+			{				
 				//查看当前节点是否已经被释放
 				if(emHashState == EM_INSERT)
 				{
@@ -409,7 +414,7 @@ private:
 
 						return nStartIndex;
 					}
-				}
+				}	
 
 				//继续寻找
 				if(uHashA == m_lpTable[nStartIndex].m_uHashA && uHashB == m_lpTable[nStartIndex].m_uHashB)
@@ -424,7 +429,7 @@ private:
 								nStartIndex, m_lpTable[nStartIndex].m_szKey, 
 								m_lpTable[nStartIndex].m_nProvKeyIndex, m_lpTable[nStartIndex].m_nNextKeyIndex);
 				*/
-				nStartIndex = m_lpTable[nStartIndex].m_nNextKeyIndex;	
+				nStartIndex = m_lpTable[nStartIndex].m_nNextKeyIndex;				
 			}
 			
 			nRunCount++;

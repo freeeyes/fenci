@@ -8,28 +8,48 @@ int main()
 {
 	//测试词典前置词加载方式
 	CWordDict objWordDict;
-	int nPoolSize = 1000000;
+	int nPoolSize = 600000;
 	shm_key obj_key = 30001;
 	shm_id obj_shm_id;
 	bool blCreate = true;	
 	
 	size_t stDict = objWordDict.Get_Mem_Size(nPoolSize);
 	printf("[Main]stDict=%d.\n", stDict);
-	//char* pData = Open_Share_Memory_API(obj_key, stDict, obj_shm_id, blCreate);
+	char* pData = Open_Share_Memory_API(obj_key, stDict, obj_shm_id, blCreate);
 	
-	char* pData = new char[stDict];
-	memset(pData, 0, stDict);
+	//char* pData = new char[stDict];
 	if(NULL != pData)
 	{
 		if(blCreate == true)
 		{	
+			memset(pData, 0, stDict);
+			printf("[main]ShareMemory first create.\n");
 			objWordDict.Init("worddict.txt", pData);
 		}
 		else
 		{
+			printf("[main]ShareMemory load.\n");
 			objWordDict.Load(pData);
 		}
 	}
+	
+	vector<string> objvecWord;
+	
+	objvecWord.clear();
+	
+	objWordDict.Cut("哪里见过你呀,朋友", objvecWord);
+	printf("[Cut]");
+	for(int i = 0; i < objvecWord.size(); i++)
+	{
+		if(i != objvecWord.size() - 1)
+		{
+			printf("%s/", objvecWord[i].c_str());
+		}
+		else
+		{
+			printf("%s/\n", objvecWord[i].c_str());
+		}
+	}	
 	
 	/*
 	//Tire树
