@@ -240,7 +240,6 @@ bool CWordDict::Set_Dict_Hash_Table(vector<string>& objTempAttrList)
 		if(emType != WORD_TYPE_UNKNOW)
 		{
 			i = i + pRune->m_nRuneLen;
-			//printf("[CWordDict::Set_Dict_Hash_Table]i=%d,nWordLen=%d.\n", i, nWordLen);
 			if(i < nWordLen)
 			{
 				//前置词
@@ -287,8 +286,14 @@ bool CWordDict::Set_Dict_Hash_Table(vector<string>& objTempAttrList)
 				}	
 				sprintf(pWordInfo->m_szWord, "%s", szPreWord);
 				pWordInfo->m_cType     = FULL_WORD;
-				pWordInfo->m_sWordRote = atoi(objTempAttrList[1].c_str());
+				pWordInfo->m_nWordRote = (int)atoi(objTempAttrList[1].c_str());
+				
 				sprintf(pWordInfo->m_szWordSpeech, "%s", objTempAttrList[2].c_str());
+				int nLen = (int)strlen(pWordInfo->m_szWordSpeech);
+				if(pWordInfo->m_szWordSpeech[nLen - 1] == 0x0D)
+				{
+					pWordInfo->m_szWordSpeech[nLen - 1] = '\0';
+				}
 
 				//先查找hashmap里面是否已经存在
 				int nPos = m_hashDict.Get_Hash_Box_Data(pWordInfo->m_szWord);
@@ -305,8 +310,7 @@ bool CWordDict::Set_Dict_Hash_Table(vector<string>& objTempAttrList)
 				{
 					printf("[CWordDict::Set_Dict_Hash_Table]map is full(Used=%d)(All=%d).\n", m_hashDict.Get_Used_Count(), m_hashDict.Get_Count());
 					return false;
-				}
-				//printf("[CWordDict::Set_Dict_Hash_Table](FULL_WORD)=%s.\n", pWordInfo->m_szWord);									
+				}							
 			}
 		}	
 	}
@@ -318,7 +322,6 @@ bool CWordDict::Init(const char* pFile, char* pData)
 {
 	size_t stSize = 0;
 	stSize = m_WordInfoPool.Init(m_nPoolSize, pData);
-	//printf("[CHmmDict::Init]m_objRuneHMMPool=%d.\n", (int)stSize);
 	pData += stSize;
 		
 	m_hashDict.Init(pData, m_nPoolSize, m_WordInfoPool.GetCryptTable());
@@ -375,7 +378,34 @@ bool CWordDict::Load(char* pData)
 	return true;
 }
 
-int CWordDict::Cut(const char* pSentence, vector<string>& vecWord)
+int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord)
+{
+	int i    = 0;
+	int nPos = 0;
+	int nSentenceLen = strlen(pSentence);
+	
+	for(int i = 0; i < nSentenceLen;)
+	{
+		_Rune       objRune;
+		_Word_Param obj_Word_Param;
+		
+		ENUM_WORD_TYPE emType = Get_Rune_From_String(pSentence, i, nSentenceLen, &objRune);
+		if(emType != WORD_TYPE_UNKNOW)
+		{
+			sprintf(obj_Word_Param.m_szWord, "%s", objRune.m_szRune);
+			obj_Word_Param.m_cType = FULL_RUNE;
+			vecWord.push_back(obj_Word_Param);			
+		}
+		else
+		{
+			printf("[CWordBase::Cut_Rune]<ERROR WORD TYPE>");
+			break;			
+		}	
+		i = i + objRune.m_nRuneLen;			
+	}		
+}
+
+int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType)
 {
 	int i    = 0;
 	int nPos = 0;
@@ -387,7 +417,8 @@ int CWordDict::Cut(const char* pSentence, vector<string>& vecWord)
 	
 	for(int i = 0; i < nSentenceLen;)
 	{
-		_Rune objRune;
+		_Rune       objRune;
+		_Word_Param obj_Word_Param;
 		
 		ENUM_WORD_TYPE emType = Get_Rune_From_String(pSentence, i, nSentenceLen, &objRune);
 		if(emType != WORD_TYPE_UNKNOW)
@@ -405,7 +436,27 @@ int CWordDict::Cut(const char* pSentence, vector<string>& vecWord)
 				{
 					//如果是一个词，去掉最后一个字，因为这个字是下一个词的词头
 					szTempWord[nPos - objRune.m_nRuneLen] = '\0';
-					vecWord.push_back((string)szTempWord);
+					nOffSet = m_hashDict.Get_Hash_Box_Data(szTempWord);
+					_Word_Info* pWordInfo = m_WordInfoPool.Get_NodeOffset_Ptr(nOffSet);
+					if(pWordInfo->m_cType == FULL_WORD)
+					{
+						//是整词
+						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+						sprintf(obj_Word_Param.m_szWordSpeech, "%s", pWordInfo->m_szWordSpeech);
+						obj_Word_Param.m_nWordRote = pWordInfo->m_nWordRote;
+						obj_Word_Param.m_cType = pWordInfo->m_cType;					
+						vecWord.push_back(obj_Word_Param);
+						//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
+					}
+					else
+					{
+						if(nType == SELECT_RUNE)
+						{
+							//不是整个词，需要把整个词拆分成单字
+							Cut_Rune(szTempWord, vecWord);
+						}
+					}
+					
 					nPos = 0;
 					memcpy(&szTempWord[nPos], &pSentence[i], objRune.m_nRuneLen);
 					nPos += objRune.m_nRuneLen;
@@ -414,26 +465,61 @@ int CWordDict::Cut(const char* pSentence, vector<string>& vecWord)
 					nOffSet = m_hashDict.Get_Hash_Box_Data(szTempWord);
 					if(nOffSet == -1)
 					{
-						//单字
-						vecWord.push_back((string)szTempWord);
+						//字
+						if(nType == SELECT_RUNE)
+						{
+							sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+							obj_Word_Param.m_cType = FULL_RUNE;
+							vecWord.push_back(obj_Word_Param);
+							//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
+						}
 						nPos = 0;						
 					}			
 				}
 				else
 				{
-					//如果是单个字，则直接入库
-					vecWord.push_back((string)szTempWord);
+					if(nType == SELECT_RUNE)
+					{
+						//如果是单个字，则直接入库
+						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+						obj_Word_Param.m_cType = FULL_RUNE;						
+						vecWord.push_back(obj_Word_Param);
+						//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
+					}
 					nPos = 0;
 				}
 			}
 			
 			i = i + objRune.m_nRuneLen;
-			//printf("[CWordDict::Cut]i=%d,objRune.m_nRuneLen=%d,nSentenceLen=%d.\n", i, objRune.m_nRuneLen, nSentenceLen);
 			if(i == nSentenceLen)
 			{
-				//如果是末尾了，直接入库
-				vecWord.push_back((string)szTempWord);
-				nPos = 0;				
+				//如果是末尾了，判断是单字还是词语
+				int nCurrPos = nPos - objRune.m_nRuneLen;
+				if(nCurrPos == 0)
+				{
+					//字
+					if(nType == SELECT_RUNE)
+					{
+						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+						obj_Word_Param.m_cType = FULL_RUNE;							
+						vecWord.push_back(obj_Word_Param);
+						//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
+					}
+					nPos = 0;
+				}
+				else
+				{
+					//词
+					nOffSet = m_hashDict.Get_Hash_Box_Data(szTempWord);
+					_Word_Info* pWordInfo = m_WordInfoPool.Get_NodeOffset_Ptr(nOffSet);
+					sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+					sprintf(obj_Word_Param.m_szWordSpeech, "%s", pWordInfo->m_szWordSpeech);
+					obj_Word_Param.m_nWordRote = pWordInfo->m_nWordRote;
+					obj_Word_Param.m_cType = pWordInfo->m_cType;					
+					vecWord.push_back(obj_Word_Param);
+					//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
+					nPos = 0;					
+				}				
 			}
 		}
 		else

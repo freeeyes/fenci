@@ -25,6 +25,7 @@ int main()
 			memset(pData, 0, stDict);
 			printf("[main]ShareMemory first create.\n");
 			objWordDict.Init("worddict.txt", pData);
+			//objWordDict.Init("word_1.txt", pData);
 		}
 		else
 		{
@@ -33,23 +34,109 @@ int main()
 		}
 	}
 	
-	vector<string> objvecWord;
+	vector<_Word_Param> objvecWord;
+	
+	char szSentence[200] = {'\0'};
+	sprintf(szSentence, "哪里见过你呀,朋友a");
+	printf("[Main]src=(%s)", szSentence);
 	
 	objvecWord.clear();
-	
-	objWordDict.Cut("哪里见过你呀,朋友", objvecWord);
-	printf("[Cut]");
+	objWordDict.Cut(szSentence, objvecWord);
+	printf("[Cut]FULL RUNE.\n");
 	for(int i = 0; i < objvecWord.size(); i++)
 	{
 		if(i != objvecWord.size() - 1)
 		{
-			printf("%s/", objvecWord[i].c_str());
+			if(objvecWord[i].m_cType == FULL_RUNE)
+			{
+				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+			}
+			else if(objvecWord[i].m_cType == FULL_WORD)
+			{
+				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
+			else
+			{
+				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
 		}
 		else
 		{
-			printf("%s/\n", objvecWord[i].c_str());
+			if(objvecWord[i].m_cType == FULL_RUNE)
+			{
+				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+			}
+			else if(objvecWord[i].m_cType == FULL_WORD)
+			{
+				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
+			else
+			{
+				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);				
+			}
 		}
 	}	
+	
+	objvecWord.clear();
+	objWordDict.Cut(szSentence, objvecWord, SELECT_WORD);
+	printf("[Cut]FULL WORD.\n");
+	for(int i = 0; i < objvecWord.size(); i++)
+	{
+		if(i != objvecWord.size() - 1)
+		{
+			if(objvecWord[i].m_cType == FULL_RUNE)
+			{
+				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+			}
+			else if(objvecWord[i].m_cType == FULL_WORD)
+			{
+				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
+			else
+			{
+				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
+		}
+		else
+		{
+			if(objvecWord[i].m_cType == FULL_RUNE)
+			{
+				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+			}
+			else if(objvecWord[i].m_cType == FULL_WORD)
+			{
+				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);
+			}
+			else
+			{
+				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+					objvecWord[i].m_szWordSpeech, 
+					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_szWord);				
+			}
+		}
+	}		
 	
 	/*
 	//Tire树
