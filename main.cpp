@@ -36,9 +36,9 @@ int main()
 	
 	vector<_Word_Param> objvecWord;
 	
-	char szSentence[200] = {'\0'};
-	sprintf(szSentence, "哪里见过你呀,朋友a");
-	printf("[Main]src=(%s)", szSentence);
+	char szSentence[500] = {'\0'};
+	sprintf(szSentence, "漂浮在算法的海洋。寻找那一瞬间的存在。不畏惧惊涛骇浪。");
+	printf("[Main]src=(%s).\n", szSentence);
 	
 	objvecWord.clear();
 	objWordDict.Cut(szSentence, objvecWord);
@@ -49,20 +49,25 @@ int main()
 		{
 			if(objvecWord[i].m_cType == FULL_RUNE)
 			{
-				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
+						objvecWord[i].m_sWordSize, 
+						objvecWord[i].m_nSentenceID,				 
+						objvecWord[i].m_szWord);
 			}
 			else if(objvecWord[i].m_cType == FULL_WORD)
 			{
-				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,  
 					objvecWord[i].m_szWord);
 			}
 			else
 			{
-				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[W]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID, 
 					objvecWord[i].m_szWord);
 			}
 		}
@@ -70,20 +75,25 @@ int main()
 		{
 			if(objvecWord[i].m_cType == FULL_RUNE)
 			{
-				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
+						objvecWord[i].m_sWordSize, 
+						objvecWord[i].m_nSentenceID,				 
+						objvecWord[i].m_szWord);
 			}
 			else if(objvecWord[i].m_cType == FULL_WORD)
 			{
-				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,
 					objvecWord[i].m_szWord);
 			}
 			else
 			{
-				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[W]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID, 
 					objvecWord[i].m_szWord);				
 			}
 		}
@@ -98,20 +108,25 @@ int main()
 		{
 			if(objvecWord[i].m_cType == FULL_RUNE)
 			{
-				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,				 
+					objvecWord[i].m_szWord);
 			}
 			else if(objvecWord[i].m_cType == FULL_WORD)
 			{
-				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,
 					objvecWord[i].m_szWord);
 			}
 			else
 			{
-				printf("[W]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[W]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,
 					objvecWord[i].m_szWord);
 			}
 		}
@@ -119,13 +134,17 @@ int main()
 		{
 			if(objvecWord[i].m_cType == FULL_RUNE)
 			{
-				printf("[Rune]<%s>\n", objvecWord[i].m_szWord);
+				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
+						objvecWord[i].m_sWordSize, 
+						objvecWord[i].m_nSentenceID,				 
+						objvecWord[i].m_szWord);
 			}
 			else if(objvecWord[i].m_cType == FULL_WORD)
 			{
-				printf("[FW]<Speech=%s,Rote=%d,Word=%s>\n", 
+				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
 					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_nWordRote, 
+					objvecWord[i].m_sWordSize, 
+					objvecWord[i].m_nSentenceID,
 					objvecWord[i].m_szWord);
 			}
 			else
