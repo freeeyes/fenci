@@ -2,6 +2,7 @@
 #include "HMMDict.h"
 #include "WordDict.h"
 #include "ShareMemory.h"
+#include "TextRank.h"
 
 //g++ -o Test runepool.cpp nodepool.cpp wordbase.cpp main.cpp
 int main()
@@ -39,65 +40,6 @@ int main()
 	char szSentence[500] = {'\0'};
 	sprintf(szSentence, "漂浮在算法的海洋。寻找那一瞬间的存在。不畏惧惊涛骇浪。");
 	printf("[Main]src=(%s).\n", szSentence);
-	
-	objvecWord.clear();
-	objWordDict.Cut(szSentence, objvecWord);
-	printf("[Cut]FULL RUNE.\n");
-	for(int i = 0; i < objvecWord.size(); i++)
-	{
-		if(i != objvecWord.size() - 1)
-		{
-			if(objvecWord[i].m_cType == FULL_RUNE)
-			{
-				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
-						objvecWord[i].m_sWordSize, 
-						objvecWord[i].m_nSentenceID,				 
-						objvecWord[i].m_szWord);
-			}
-			else if(objvecWord[i].m_cType == FULL_WORD)
-			{
-				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
-					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_sWordSize, 
-					objvecWord[i].m_nSentenceID,  
-					objvecWord[i].m_szWord);
-			}
-			else
-			{
-				printf("[W]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
-					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_sWordSize, 
-					objvecWord[i].m_nSentenceID, 
-					objvecWord[i].m_szWord);
-			}
-		}
-		else
-		{
-			if(objvecWord[i].m_cType == FULL_RUNE)
-			{
-				printf("[Rune]<Len=%d,S=%d,Word=%s>\n",
-						objvecWord[i].m_sWordSize, 
-						objvecWord[i].m_nSentenceID,				 
-						objvecWord[i].m_szWord);
-			}
-			else if(objvecWord[i].m_cType == FULL_WORD)
-			{
-				printf("[FW]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
-					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_sWordSize, 
-					objvecWord[i].m_nSentenceID,
-					objvecWord[i].m_szWord);
-			}
-			else
-			{
-				printf("[W]<Speech=%s,Len=%d,S=%d,Word=%s>\n", 
-					objvecWord[i].m_szWordSpeech, 
-					objvecWord[i].m_sWordSize, 
-					objvecWord[i].m_nSentenceID, 
-					objvecWord[i].m_szWord);				
-			}
-		}
-	}	
 	
 	objvecWord.clear();
 	objWordDict.Cut(szSentence, objvecWord, SELECT_WORD);
@@ -156,6 +98,17 @@ int main()
 			}
 		}
 	}		
+	
+	//测试提炼摘要
+	CTextRank objTextRank;
+	vector<_Word> vecKeysList;
+	objTextRank.Rank(objvecWord, vecKeysList, 3);
+	
+	printf("//========================\n");
+	for(int i = 0; i < vecKeysList.size(); i++)
+	{
+		printf("[CTextRank::Rank]<%s == %f>.\n", vecKeysList[i].word.c_str(), vecKeysList[i].weight);
+	}	
 	
 	/*
 	//Tire树
