@@ -45,8 +45,7 @@ int main()
 	char szHMMSentence[500] = {'\0'};
 	
 	objvecWord.clear();
-	objWordDict.Cut(szSentence, objvecWord, SELECT_RUNE);
-	printf("[Cut]FULL RUNE.\n");
+	objWordDict.Cut(szSentence, objvecWord, SELECT_WORD);
 	for(int i = 0; i < objvecWord.size(); i++)
 	{
 		if(i != objvecWord.size() - 1)

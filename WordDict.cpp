@@ -397,38 +397,14 @@ void CWordDict::Get_Sentence_ID(const char* pWord, int& nSentenceID)
 	}
 }
 
-int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int nSentenceID)
+int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int nSentenceID, int nType)
 {
 	int i    = 0;
 	int nPos = 0;
 	int nSentenceLen = strlen(pSentence);
 	
 	//进行HMM分词
-	m_objHmmDict.Cut(pSentence, nSentenceLen, nSentenceID, vecWord);
-	
-	/*
-	for(int i = 0; i < nSentenceLen;)
-	{
-		_Rune       objRune;
-		_Word_Param obj_Word_Param;
-		
-		ENUM_WORD_TYPE emType = Get_Rune_From_String(pSentence, i, nSentenceLen, &objRune);
-		if(emType != WORD_TYPE_UNKNOW)
-		{
-			sprintf(obj_Word_Param.m_szWord, "%s", objRune.m_szRune);
-			obj_Word_Param.m_cType       = FULL_RUNE;
-			obj_Word_Param.m_sWordSize   = 1;
-			obj_Word_Param.m_nSentenceID = nSentenceID;
-			vecWord.push_back(obj_Word_Param);			
-		}
-		else
-		{
-			printf("[CWordBase::Cut_Rune]<ERROR WORD TYPE>");
-			break;			
-		}	
-		i = i + objRune.m_nRuneLen;			
-	}	
-	*/	
+	m_objHmmDict.Cut(pSentence, nSentenceLen, nSentenceID, nType, vecWord);
 }
 
 int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType)
@@ -481,11 +457,8 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 					}
 					else
 					{
-						if(nType == SELECT_RUNE)
-						{
-							//不是整个词，需要把整个词拆分成单字
-							Cut_Rune(szTempWord, vecWord, nSentenceID);
-						}
+						//不是整个词，需要把整个词拆分成单字
+						Cut_Rune(szTempWord, vecWord, nSentenceID, nType);
 					}
 					
 					nPos      = 0;

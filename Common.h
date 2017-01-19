@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,13 @@ const double MAX_DOUBLE = 3.14e+100;
 #define MAX_WORD_SIZE   50
 #define MAX_SPEECH_SIZE 5 
 
+//词或者字的切分规则
+enum
+{
+	SELECT_RUNE = 0,
+	SELECT_WORD,
+};
+
 //词性 前置词 完整词 单字
 enum
 {
@@ -21,6 +29,42 @@ enum
 	PRE_WORD,
 	FULL_WORD,
 	FULL_RUNE,
+};
+
+//词语相关信息
+struct _Word_Info
+{
+	char  m_szWord[MAX_WORD_SIZE];
+	int   m_nWordRote;
+	char  m_szWordSpeech[MAX_SPEECH_SIZE];
+	char  m_cType;
+	int   m_nIndex;
+	char  m_cUsed;                //0未使用 1使用
+	
+	_Word_Info()
+	{
+		Init();
+	}
+	
+	void Init()
+	{
+		memset(m_szWord, 0, MAX_WORD_SIZE);
+		memset(m_szWordSpeech, 0, MAX_SPEECH_SIZE);
+		m_nWordRote = 0;
+		m_nIndex    = 0;
+		m_cUsed     = 0;	
+		m_cType     = NONE_WORD;	
+	}
+	
+	void Set_Index(int nIndex)
+	{
+		m_nIndex = nIndex;
+	}
+	
+	int Get_Index()
+	{
+		return m_nIndex;
+	}	
 };
 
 //字词解析结构信息

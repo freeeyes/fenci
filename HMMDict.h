@@ -26,7 +26,7 @@ public:
 	bool Init(const char* pFile, char* pData);
 	bool Load(char* pData);
 	
-	void Cut(const char* pData, int nLen, int nSentenceID, vector<_Word_Param>& objWordList);
+	void Cut(const char* pData, int nLen, int nSentenceID, int nType, vector<_Word_Param>& objWordList);
 	
 private:
 	bool Read_File_Line(ifstream& ifs, string& strLine);
