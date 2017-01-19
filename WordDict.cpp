@@ -200,6 +200,7 @@ size_t CWordDict::Get_Mem_Size(int nPoolSize)
 {
   size_t stPoolSize = nPoolSize * sizeof(_Word_Info) + nPoolSize * sizeof(_Hash_Table_Cell);
   stPoolSize += 1280;  //Hash字典
+  stPoolSize += m_objHmmDict.Get_Mem_Size();
   m_nPoolSize = nPoolSize;
   return stPoolSize;	
 }
@@ -318,7 +319,7 @@ bool CWordDict::Set_Dict_Hash_Table(vector<string>& objTempAttrList)
 	return true;
 }
 
-bool CWordDict::Init(const char* pFile, char* pData)
+bool CWordDict::Init(const char* pFile, const char* pHMMFile, char* pData)
 {
 	size_t stSize = 0;
 	stSize = m_WordInfoPool.Init(m_nPoolSize, pData);
@@ -326,6 +327,10 @@ bool CWordDict::Init(const char* pFile, char* pData)
 		
 	m_hashDict.Init(pData, m_nPoolSize, m_WordInfoPool.GetCryptTable());
 	pData += m_nPoolSize * sizeof(_Hash_Table_Cell);
+	
+	//读取HMM字典
+	m_objHmmDict.Init(pHMMFile, pData);
+	pData += m_objHmmDict.Get_Mem_Size();
 	
 	//读取配置文件，还原成数据结构
 	ifstream ifs(pFile);
@@ -372,8 +377,11 @@ bool CWordDict::Load(char* pData)
 	
 	m_hashDict.Load(pData, m_nPoolSize, m_WordInfoPool.GetCryptTable());
 	pData += m_nPoolSize * sizeof(_Hash_Table_Cell);
-	//printf("[CWordDict::Load]stSize=%d.\n", stSize + m_nPoolSize * sizeof(_Hash_Table_Cell));
 	printf("[CWordDict::Load]Map Count=%d.\n", m_hashDict.Get_Used_Count());
+	
+	//加载HMM字典
+	m_objHmmDict.Load(pData);
+	pData += m_objHmmDict.Get_Mem_Size();	
 	
 	return true;
 }
@@ -395,6 +403,10 @@ int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int
 	int nPos = 0;
 	int nSentenceLen = strlen(pSentence);
 	
+	//进行HMM分词
+	m_objHmmDict.Cut(pSentence, nSentenceLen, nSentenceID, vecWord);
+	
+	/*
 	for(int i = 0; i < nSentenceLen;)
 	{
 		_Rune       objRune;
@@ -415,7 +427,8 @@ int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int
 			break;			
 		}	
 		i = i + objRune.m_nRuneLen;			
-	}		
+	}	
+	*/	
 }
 
 int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType)

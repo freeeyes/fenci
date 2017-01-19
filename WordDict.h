@@ -2,9 +2,7 @@
 #define _WORDDICT_H
 
 #include <fstream>
-#include "Common.h"
-#include "runepool.h"
-#include "HashTable.h"
+#include "HMMDict.h"
 
 //add by freeeyes
 //用直接的hash替换tire树的方法，节省字典空间，效率一样
@@ -87,7 +85,7 @@ public:
 	~CWordDict();
 	
 	size_t Get_Mem_Size(int nPoolSize);
-	bool Init(const char* pFile, char* pData);
+	bool Init(const char* pFile, const char* pHMMFile, char* pData);
 	bool Load(char* pData);
 	
 	int Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType = SELECT_RUNE);
@@ -103,6 +101,7 @@ private:
 	CWordInfoPool m_WordInfoPool;
 	int           m_nPoolSize;
 	CHashTable    m_hashDict;
+	CHmmDict      m_objHmmDict;
 };
 
 #endif
