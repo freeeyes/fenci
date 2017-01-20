@@ -12,8 +12,9 @@ using namespace std;
 const double MIN_DOUBLE = -3.14e+100;
 const double MAX_DOUBLE = 3.14e+100;
 
-#define MAX_WORD_SIZE   50
-#define MAX_SPEECH_SIZE 5 
+#define MAX_SENTENCE_SIZE  1024
+#define MAX_WORD_SIZE      50
+#define MAX_SPEECH_SIZE    5 
 
 //词或者字的切分规则
 enum

@@ -278,7 +278,7 @@ void CHmmDict::Viterbi(const char* pData, int nLen, vector<_Rune>& objRuneList, 
 {
 	//首先把句子拆成一个个字
 	Sentance_To_Rune(pData, nLen, objRuneList);
-	printf("[CHmmDict::Viterbi]objRuneList Count=%d.\n", objRuneList.size());
+	//printf("[CHmmDict::Viterbi]objRuneList Count=%d.\n", objRuneList.size());
 	
 	int nRowCount    = (int)objRuneList.size();
 	int nColCount    = (int)RUNE_POS_ALL;

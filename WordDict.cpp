@@ -397,6 +397,116 @@ void CWordDict::Get_Sentence_ID(const char* pWord, int& nSentenceID)
 	}
 }
 
+void CWordDict::HMM_Cut_Word(vector<_Word_Param>& vecTempWord, vector<_Word_Param>& vecWord, int nType)
+{
+	int nRunePos    = 0;
+	int nRuneCount  = 0;
+	int nSentenceID = 0;
+	
+	char szTemp[MAX_SENTENCE_SIZE] = {'\0'};
+	
+	for(int i = 0; i < (int)vecTempWord.size(); i++)
+	{
+		if(FULL_WORD == vecTempWord[i].m_cType)
+		{
+			//判断上一个字是否已经结束
+			if(nRuneCount == 1)
+			{
+				if(SELECT_RUNE == nType)
+				{
+					_Word_Param obj_Word_Param;
+		 			sprintf(obj_Word_Param.m_szWord, "%s", szTemp);		
+		 			obj_Word_Param.m_cType       = FULL_RUNE;		
+		 			obj_Word_Param.m_sWordSize   = 1;		
+		 			obj_Word_Param.m_nSentenceID = nSentenceID;		
+		 			vecWord.push_back(obj_Word_Param);		
+				}
+			}
+			else if(nRuneCount > 1)
+			{
+				//进行马尔科夫分解
+				vector<_Word_Param> vecHMMWord;
+				m_objHmmDict.Cut(szTemp, nRunePos, nSentenceID, nType, vecHMMWord);
+				for(int j = 0; j < (int)vecHMMWord.size(); j++)
+				{
+					if(FULL_WORD == vecHMMWord[j].m_cType)
+					{
+						//printf("[CWordDict::HMM_Cut_Word]szTemp=%s,HMM=%s.\n", szTemp, vecHMMWord[j].m_szWord);
+						vecWord.push_back(vecHMMWord[j]);
+					}
+					else if(FULL_RUNE == vecHMMWord[j].m_cType && SELECT_RUNE == nType)
+					{
+						vecWord.push_back(vecHMMWord[j]);
+					}
+				}
+			}
+			
+			//当前词直接进入最终结果
+			vecWord.push_back(vecTempWord[i]);
+			
+			nRunePos   = 0;
+			nRuneCount = 0;
+		}
+		else
+		{
+			if(nRunePos == 0)
+			{
+				nSentenceID = vecTempWord[i].m_nSentenceID;
+			}
+			
+			if(nSentenceID != vecTempWord[i].m_nSentenceID)
+			{
+				//如果不在同一句子中
+				//首先看是不是需要对上一句进行HMM
+				if(nRuneCount == 1)
+				{
+					if(SELECT_RUNE == nType)
+					{
+						_Word_Param obj_Word_Param;
+			 			sprintf(obj_Word_Param.m_szWord, "%s", szTemp);		
+			 			obj_Word_Param.m_cType       = FULL_RUNE;		
+			 			obj_Word_Param.m_sWordSize   = 1;		
+			 			obj_Word_Param.m_nSentenceID = nSentenceID;		
+			 			vecWord.push_back(obj_Word_Param);		
+					}
+				}
+				else if(nRuneCount > 1)
+				{
+					//进行马尔科夫分解
+					vector<_Word_Param> vecHMMWord;
+					m_objHmmDict.Cut(szTemp, nRuneCount, nSentenceID, nType, vecHMMWord);
+					for(int j = 0; j < (int)vecHMMWord.size(); j++)
+					{
+						if(FULL_WORD == vecHMMWord[j].m_cType)
+						{
+							vecWord.push_back(vecHMMWord[j]);
+						}
+						else if(FULL_RUNE == vecHMMWord[j].m_cType && SELECT_RUNE == nType)
+						{
+							vecWord.push_back(vecHMMWord[j]);
+						}
+					}
+				}
+				
+				//重新开始
+				nRunePos   = 0;
+				nRuneCount = 0;
+			}
+
+			if(nRunePos + (int)strlen(vecTempWord[i].m_szWord) >= MAX_SENTENCE_SIZE)
+			{
+				continue;
+			}
+			
+			int nRuneLen = (int)strlen(vecTempWord[i].m_szWord);
+			memcpy(&szTemp[nRunePos], vecTempWord[i].m_szWord, nRuneLen);
+			nRunePos += nRuneLen;
+			szTemp[nRunePos] = '\0';
+			nRuneCount++;			
+		}
+	}
+}
+
 int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int nSentenceID, int nType)
 {
 	int i    = 0;
@@ -404,7 +514,28 @@ int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int
 	int nSentenceLen = strlen(pSentence);
 	
 	//进行HMM分词
-	m_objHmmDict.Cut(pSentence, nSentenceLen, nSentenceID, nType, vecWord);
+	//m_objHmmDict.Cut(pSentence, nSentenceLen, nSentenceID, nType, vecWord);
+	for(int i = 0; i < nSentenceLen;)		
+ 	{		
+ 		_Rune       objRune;		
+ 		_Word_Param obj_Word_Param;		
+ 				
+ 		ENUM_WORD_TYPE emType = Get_Rune_From_String(pSentence, i, nSentenceLen, &objRune);		
+ 		if(emType != WORD_TYPE_UNKNOW)		
+ 		{		
+ 			sprintf(obj_Word_Param.m_szWord, "%s", objRune.m_szRune);		
+ 			obj_Word_Param.m_cType       = FULL_RUNE;		
+ 			obj_Word_Param.m_sWordSize   = 1;		
+ 			obj_Word_Param.m_nSentenceID = nSentenceID;		
+ 			vecWord.push_back(obj_Word_Param);					
+ 		}		
+ 		else		
+ 		{		
+ 			printf("[CWordBase::Cut_Rune]<ERROR WORD TYPE>");		
+ 			break;					
+ 		}			
+ 		i = i + objRune.m_nRuneLen;					
+ 	}		
 }
 
 int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType)
@@ -414,6 +545,8 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 	int nWordSize   = 0;
 	int nSentenceID = 1;
 	int nSentenceLen = strlen(pSentence);
+	
+	vector<_Word_Param> vecTempWord;
 	
 	vecWord.clear();
 	
@@ -453,12 +586,12 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 						obj_Word_Param.m_cType       = pWordInfo->m_cType;
 						obj_Word_Param.m_sWordSize   = --nWordSize;
 						obj_Word_Param.m_nSentenceID = nSentenceID;
-						vecWord.push_back(obj_Word_Param);
+						vecTempWord.push_back(obj_Word_Param);
 					}
 					else
 					{
 						//不是整个词，需要把整个词拆分成单字
-						Cut_Rune(szTempWord, vecWord, nSentenceID, nType);
+						Cut_Rune(szTempWord, vecTempWord, nSentenceID, nType);
 					}
 					
 					nPos      = 0;
@@ -471,15 +604,11 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 					if(nOffSet == -1)
 					{
 						//字
-						if(nType == SELECT_RUNE)
-						{
-							sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
-							obj_Word_Param.m_cType = FULL_RUNE;
-							obj_Word_Param.m_sWordSize   = 1;
-							obj_Word_Param.m_nSentenceID = nSentenceID;							
-							vecWord.push_back(obj_Word_Param);
-							//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
-						}
+						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+						obj_Word_Param.m_cType = FULL_RUNE;
+						obj_Word_Param.m_sWordSize   = 1;
+						obj_Word_Param.m_nSentenceID = nSentenceID;							
+						vecTempWord.push_back(obj_Word_Param);
 						
 						//判断是否为句子终止符
 						Get_Sentence_ID(szTempWord, nSentenceID);						
@@ -490,16 +619,12 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 				}
 				else
 				{
-					if(nType == SELECT_RUNE)
-					{
-						//如果是单个字，则直接入库
-						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
-						obj_Word_Param.m_cType = FULL_RUNE;	
-						obj_Word_Param.m_sWordSize   = 1;
-						obj_Word_Param.m_nSentenceID = nSentenceID;											
-						vecWord.push_back(obj_Word_Param);
-						//printf("[CWordDict::Cut]szTempWord=%s.\n", obj_Word_Param.m_szWord);
-					}
+					//如果是单个字，则直接入库
+					sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+					obj_Word_Param.m_cType = FULL_RUNE;	
+					obj_Word_Param.m_sWordSize   = 1;
+					obj_Word_Param.m_nSentenceID = nSentenceID;											
+					vecTempWord.push_back(obj_Word_Param);
 					
 					//判断是否为句子终止符
 					Get_Sentence_ID(szTempWord, nSentenceID);						
@@ -517,14 +642,11 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 				if(nCurrPos == 0)
 				{
 					//字
-					if(nType == SELECT_RUNE)
-					{
-						sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
-						obj_Word_Param.m_cType       = FULL_RUNE;
-						obj_Word_Param.m_sWordSize   = 1;
-						obj_Word_Param.m_nSentenceID = nSentenceID;													
-						vecWord.push_back(obj_Word_Param);
-					}
+					sprintf(obj_Word_Param.m_szWord, "%s", szTempWord);
+					obj_Word_Param.m_cType       = FULL_RUNE;
+					obj_Word_Param.m_sWordSize   = 1;
+					obj_Word_Param.m_nSentenceID = nSentenceID;													
+					vecTempWord.push_back(obj_Word_Param);
 					nPos      = 0;
 					nWordSize = 0;
 				}
@@ -539,7 +661,7 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 					obj_Word_Param.m_cType       = pWordInfo->m_cType;	
 					obj_Word_Param.m_sWordSize   = 1;
 					obj_Word_Param.m_nSentenceID = nSentenceID;							
-					vecWord.push_back(obj_Word_Param);
+					vecTempWord.push_back(obj_Word_Param);
 					nPos      = 0;	
 					nWordSize = 0;				
 				}				
@@ -551,6 +673,9 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 			break;			
 		}		
 	}
+	
+	//最后进行统一的HMM筛选
+	HMM_Cut_Word(vecTempWord, vecWord, nType);
 	
 	return 0;
 }

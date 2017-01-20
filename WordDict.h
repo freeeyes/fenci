@@ -54,6 +54,8 @@ private:
 	bool Set_Dict_Hash_Table(vector<string>& objTempAttrList);
 	void Get_Sentence_ID(const char* pWord, int& nSentenceID);
 	
+	void HMM_Cut_Word(vector<_Word_Param>& vecTempWord, vector<_Word_Param>& vecWord, int nType);
+	
 private:
 	CWordInfoPool m_WordInfoPool;
 	int           m_nPoolSize;
