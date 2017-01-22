@@ -420,6 +420,8 @@ void CHmmDict::Cut(const char* pData, int nLen, int nSentenceID, int nType, vect
 	
 	char szTemp[100] = {'\0'};
 	int  nTempLen    = 0;
+	int  nRuneSize   = 0;
+	
 	//整合输出成词
 	for(int i = 0; i < (int)objRuneList.size(); i++)
 	{
@@ -428,9 +430,11 @@ void CHmmDict::Cut(const char* pData, int nLen, int nSentenceID, int nType, vect
 			nTempLen = 0;
 			memcpy(&szTemp[nTempLen], objRuneList[i].m_szRune, objRuneList[i].m_nRuneLen);
 			nTempLen += objRuneList[i].m_nRuneLen;
+			nRuneSize++;
 		}
 		else if(objResList[i] == RUNE_POS_E)
 		{
+			nRuneSize++;
 			_Word_Param obj_Word_Param;
 			memcpy(&szTemp[nTempLen], objRuneList[i].m_szRune, objRuneList[i].m_nRuneLen);
 			nTempLen += objRuneList[i].m_nRuneLen;
@@ -439,14 +443,16 @@ void CHmmDict::Cut(const char* pData, int nLen, int nSentenceID, int nType, vect
 			sprintf(obj_Word_Param.m_szWord, "%s", szTemp);
 			sprintf(obj_Word_Param.m_szWordSpeech, "hmm");
 			obj_Word_Param.m_cType       = FULL_WORD;
-			obj_Word_Param.m_sWordSize   = nTempLen; 
+			obj_Word_Param.m_sWordSize   = nRuneSize; 
 			obj_Word_Param.m_nSentenceID = nSentenceID;
 			objWordList.push_back(obj_Word_Param);
+			nRuneSize = 0;
 		}
 		else if(objResList[i] == RUNE_POS_M)
 		{
 			memcpy(&szTemp[nTempLen], objRuneList[i].m_szRune, objRuneList[i].m_nRuneLen);
-			nTempLen += objRuneList[i].m_nRuneLen;			
+			nTempLen += objRuneList[i].m_nRuneLen;	
+			nRuneSize++;	
 		}
 		else
 		{

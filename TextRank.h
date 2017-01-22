@@ -19,6 +19,9 @@ public:
 	bool Rank(vector<_Word_Param> objvecWord, vector<_Word>& vecWordList, int nTopCount = 10);
 	
 private:
+	void Filter_Word(vector<_Word_Param>& vecWordList, vector<_Word_Param>& objtagList);
+	
+private:
 	struct _Dict_Info
 	{
 		char szBeginWord[MAX_WORD_SIZE];

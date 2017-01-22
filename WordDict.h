@@ -45,7 +45,7 @@ public:
 	bool Init(const char* pFile, const char* pHMMFile, char* pData);
 	bool Load(char* pData);
 	
-	int Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType = SELECT_RUNE);
+	int Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType = SELECT_RUNE, bool blHMM = false);
 	int Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int nSentenceID = 1, int nType = SELECT_RUNE);
 	bool Add_Word(const char* pWord, int nRote, const char* pWordSpeech);
 	

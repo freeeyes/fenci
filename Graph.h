@@ -61,18 +61,30 @@ public:
         ws[edges->first].word=edges->first;
         ws[edges->first].weight=wsdef;
         outSum[edges->first].weight=0;
-        for(Edges::iterator edge=edges->second.begin();edge!=edges->second.end();++edge){
+        for(Edges::iterator edge=edges->second.begin();edge!=edges->second.end();++edge)
+        {
           outSum[edges->first].weight+=edge->second;
         }
       }
 
-      for( size_t i=0; i<rankTime; i++ ){
-        for(NodeSet::iterator node = nodeSet.begin(); node != nodeSet.end(); node++ ){
+      for( size_t i=0; i<rankTime; i++ )
+      {
+        for(NodeSet::iterator node = nodeSet.begin(); node != nodeSet.end(); node++ )
+        {
           double s = 0;
           for( Edges::iterator edge= graph[*node].begin(); edge != graph[*node].end(); edge++ )
+          {
             s += edge->second / outSum[edge->first].weight * ws[edge->first].weight;
+          }
           ws[*node].weight = (1 - d) + d * s;
         }
+        
+        //打印收敛情况
+        //for(WordMap::iterator i = ws.begin(); i != ws.end(); i++)
+        //{
+        //	printf("%s:%f	", i->first.c_str(), ws[i->first].weight);
+        //}
+        //printf("\n");
       }
 
       min_rank=max_rank=ws.begin()->second.weight;

@@ -8,26 +8,45 @@ CTextRank::~CTextRank()
 {
 }
 
-bool CTextRank::Cut_Dict(vector<_Word_Param>& objvecWord)
+void CTextRank::Filter_Word(vector<_Word_Param>& vecWordList, vector<_Word_Param>& objtagList)
 {
-	//分析一个句子中包含的所有共生词
-	for(int i = 0; i < objvecWord.size(); i++)
+	//过滤当前词语中所有的名词和形容词，忽略其他的词
+	objtagList.clear();
+	for(int i = 0;i < (int)vecWordList.size(); i++)
 	{
 		//过滤单字
-		if(objvecWord[i].m_sWordSize <= 1)
+		if(vecWordList[i].m_sWordSize <= 1)
 		{
 			continue;
-		}
+		}		
 		
-		for(int j = i + 1; j < objvecWord.size(); j++)
+		if(strcmp(vecWordList[i].m_szWordSpeech, "n") == 0 ||
+			 strcmp(vecWordList[i].m_szWordSpeech, "ns") == 0|| 
+			 strcmp(vecWordList[i].m_szWordSpeech, "v") == 0)
 		{
-			if(objvecWord[j].m_sWordSize <= 1)
+			objtagList.push_back(vecWordList[i]);
+		}
+	}
+}
+
+bool CTextRank::Cut_Dict(vector<_Word_Param>& objvecWord)
+{
+	vector<_Word_Param> objtagList;
+	//过滤当前句子中的词语
+	Filter_Word(objvecWord, objtagList);
+	
+	//分析一个句子中包含的所有共生词
+	for(int i = 0; i < objtagList.size(); i++)
+	{
+		for(int j = i + 1; j < objtagList.size(); j++)
+		{
+			if(objtagList[j].m_sWordSize <= 1)
 			{
 				continue;
 			}
 			
 			//将共生词记录在字典里
-			string strkey = (string)objvecWord[i].m_szWord + (string)objvecWord[j].m_szWord;
+			string strkey = (string)objtagList[i].m_szWord + (string)objtagList[j].m_szWord;
 			mapDictInfo::iterator f = m_mapDict.find(strkey);
 			if(f != m_mapDict.end())
 			{
@@ -39,8 +58,8 @@ bool CTextRank::Cut_Dict(vector<_Word_Param>& objvecWord)
 			{
 				//不在当前字典中，添加新共生词
 				_Dict_Info obj_Dict_Info;
-				sprintf(obj_Dict_Info.szBeginWord, "%s", objvecWord[i].m_szWord);
-				sprintf(obj_Dict_Info.szEndWord, "%s", objvecWord[j].m_szWord);
+				sprintf(obj_Dict_Info.szBeginWord, "%s", objtagList[i].m_szWord);
+				sprintf(obj_Dict_Info.szEndWord, "%s", objtagList[j].m_szWord);
 				obj_Dict_Info.nWeigth = 1;
 				m_mapDict.insert(mapDictInfo::value_type(strkey, obj_Dict_Info));
 			}
@@ -104,7 +123,7 @@ bool CTextRank::Rank(vector<_Word_Param> objvecWord, vector<_Word>& vecWordList,
 	WordMap objWordMap;
 	
 	//计算摘要
-	m_WordGraph.rank(objWordMap, nTopCount);
+	m_WordGraph.rank(objWordMap);
 	
 	for(WordMap::iterator e = objWordMap.begin(); e != objWordMap.end(); e++)
 	{

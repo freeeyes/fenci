@@ -538,7 +538,7 @@ int CWordDict::Cut_Rune(const char* pSentence, vector<_Word_Param>& vecWord, int
  	}		
 }
 
-int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType)
+int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nType, bool blHMM)
 {
 	int i           = 0;
 	int nPos        = 0;
@@ -674,9 +674,16 @@ int CWordDict::Cut(const char* pSentence, vector<_Word_Param>& vecWord, int nTyp
 		}		
 	}
 	
-	//最后进行统一的HMM筛选
-	HMM_Cut_Word(vecTempWord, vecWord, nType);
-	
+	if(blHMM == true)
+	{
+		//最后进行统一的HMM筛选
+		HMM_Cut_Word(vecTempWord, vecWord, nType);
+	}
+	else
+	{
+		vecWord.reserve(vecTempWord.size());
+		vecWord.insert(vecWord.end(), vecTempWord.begin(), vecTempWord.end());
+	}
 	return 0;
 }
 
